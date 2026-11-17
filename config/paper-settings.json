@@ -1,0 +1,7 @@
+{
+  "mode": "PAPER_ONLY",
+  "enabled": true,
+  "broker_connection": false,
+  "live_orders": false,
+  "description": "Paper-only simulation. Set enabled=false to stop future virtual orders."
+}
