@@ -1,0 +1,30 @@
+name: ETF-Kursdaten aktualisieren
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 23 * * 1-5'
+permissions:
+  contents: write
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository laden
+        uses: actions/checkout@v4
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Kursdaten abrufen und validieren
+        run: python scripts/update_etf.py
+      - name: Neue Kursdatei committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/etf-prices.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update ETF historical prices"
+            git push
+          else
+            echo "No changes"
+          fi
