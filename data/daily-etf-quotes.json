@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "generated_at": "2026-11-17T20:46:17.455234+00:00",
+  "source": "Yahoo Finance unofficial daily close",
+  "currency": "USD",
+  "quotes": {
+    "BND": {
+      "date": "2026-11-17",
+      "close_usd": 70.735,
+      "age_calendar_days": 0,
+      "status": "RECENT"
+    },
+    "MTUM": {
+      "date": "2026-11-17",
+      "close_usd": 64.95,
+      "age_calendar_days": 0,
+      "status": "RECENT"
+    },
+    "QQQ": {
+      "date": "2026-11-17",
+      "close_usd": 654.28497,
+      "age_calendar_days": 0,
+      "status": "RECENT"
+    },
+    "SMH": {
+      "date": "2026-11-17",
+      "close_usd": 455.54999,
+      "age_calendar_days": 0,
+      "status": "RECENT"
+    },
+    "VT": {
+      "date": "2026-11-17",
+      "close_usd": 150.48,
+      "age_calendar_days": 0,
+      "status": "RECENT"
+    }
+  },
+  "errors": {},
+  "status": "RECENT",
+  "notice": "Delayed daily close, not real-time and not a broker execution price."
+}

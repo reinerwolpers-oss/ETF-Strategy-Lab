@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "generated_at": "2026-11-17T20:46:07.240988+00:00",
+  "generated_at": "2026-11-17T20:46:18.274639+00:00",
   "mode": "PAPER_ONLY",
   "source": "Read-only explanation based on stored paper and seasonal JSON",
   "last_paper_run": "2026-11-17T19:52:53.017917+00:00",
   "last_market_day": "2026-11-17",
-  "quote_snapshot_generated_at": null,
-  "quote_snapshot_status": "MISSING",
+  "quote_snapshot_generated_at": "2026-11-17T20:46:17.455234+00:00",
+  "quote_snapshot_status": "RECENT",
   "quote_errors": {},
   "bot_fresh": true,
   "season_fresh": true,
@@ -22,9 +22,9 @@
       "reason": "Historische Validierungsgrenzen nicht bestanden",
       "has_position": false,
       "planned_exit_date": null,
-      "last_quote_date": null,
-      "last_quote_usd": null,
-      "quote_status": "MISSING",
+      "last_quote_date": "2026-11-17",
+      "last_quote_usd": 150.48,
+      "quote_status": "RECENT",
       "historical_validation_pass": false
     },
     {
@@ -33,9 +33,9 @@
       "reason": "Eintrittsfenster dieses Jahres vorbei; nächste Prüfung 2027-05-28",
       "has_position": false,
       "planned_exit_date": null,
-      "last_quote_date": null,
-      "last_quote_usd": null,
-      "quote_status": "MISSING",
+      "last_quote_date": "2026-11-17",
+      "last_quote_usd": 654.28497,
+      "quote_status": "RECENT",
       "historical_validation_pass": true
     },
     {
@@ -44,9 +44,9 @@
       "reason": "Eintrittsfenster dieses Jahres vorbei; nächste Prüfung 2027-10-08",
       "has_position": false,
       "planned_exit_date": null,
-      "last_quote_date": null,
-      "last_quote_usd": null,
-      "quote_status": "MISSING",
+      "last_quote_date": "2026-11-17",
+      "last_quote_usd": 455.54999,
+      "quote_status": "RECENT",
       "historical_validation_pass": true
     },
     {
@@ -55,9 +55,9 @@
       "reason": "Historische Validierungsgrenzen nicht bestanden",
       "has_position": false,
       "planned_exit_date": null,
-      "last_quote_date": null,
-      "last_quote_usd": null,
-      "quote_status": "MISSING",
+      "last_quote_date": "2026-11-17",
+      "last_quote_usd": 64.95,
+      "quote_status": "RECENT",
       "historical_validation_pass": false
     },
     {
@@ -66,9 +66,9 @@
       "reason": "Historische Validierungsgrenzen nicht bestanden",
       "has_position": false,
       "planned_exit_date": null,
-      "last_quote_date": null,
-      "last_quote_usd": null,
-      "quote_status": "MISSING",
+      "last_quote_date": "2026-11-17",
+      "last_quote_usd": 70.735,
+      "quote_status": "RECENT",
       "historical_validation_pass": false
     }
   ],
