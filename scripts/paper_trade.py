@@ -17,6 +17,9 @@ ROOT=pathlib.Path(__file__).resolve().parents[1]
 STATE=ROOT/"data"/"paper-portfolio.json"
 SIGNALS=ROOT/"data"/"seasonal-signals.json"
 START_CASH=500.0
+CONFIG=ROOT/"config"/"paper-settings.json"
+MAX_HISTORY=1500
+MAX_TRADES=1000
 MAX_POSITION_FRACTION=0.20
 # Fractional shares are a virtual modeling choice, NOT a guarantee of IBKR execution.
 FRACTIONAL_SHARE_STEP=0.001
@@ -51,6 +54,17 @@ def fetch_close(ticker):
             err=exc
             time.sleep(1)
     raise RuntimeError(f"No trusted price for {ticker}: {err}")
+
+def paper_settings():
+    cfg=load_json(CONFIG)
+    if cfg.get("mode")!="PAPER_ONLY" or type(cfg.get("enabled")) is not bool:
+        raise RuntimeError("Paper configuration invalid: fail closed")
+    return cfg
+
+def record_error(message):
+    # The repository workflow may not persist errors unless it commits state.
+    # Never mutate positions after a failed market-data check.
+    print("PAPER ERROR:",message)
 
 def new_state():
     return {"schema":1,"mode":"PAPER_ONLY","trading_enabled":True,"starting_cash":START_CASH,
@@ -87,21 +101,26 @@ def trade(state,day,ticker,side,quantity,quote,reason):
 def main():
     now=dt.datetime.now(dt.timezone.utc)
     today=now.date()
+    settings=paper_settings()
     state=load_json(STATE) if STATE.exists() else new_state()
     if state.get("mode")!="PAPER_ONLY":raise RuntimeError("Fail closed: invalid trading mode")
     if state.get("starting_cash")!=START_CASH:raise RuntimeError("Unexpected capital configuration")
-    if not state.get("trading_enabled",False):
+    if not settings["enabled"] or not state.get("trading_enabled",False):
         state["last_run"]=now.isoformat()
-        state["last_error"]="Trading disabled by paper kill switch"
+        state["last_error"]="Paper execution disabled by safety switch"
         save(state)
         print("Paper execution disabled; no fills")
         return
 
+    # Validate all persisted positions BEFORE accessing external quotes.
+    for ticker,position in state["positions"].items():
+        if ticker not in SUPPORTED or not math.isfinite(float(position["qty"])) or float(position["qty"])<=0:
+            raise RuntimeError("Invalid paper position: fail closed")
     document=load_json(SIGNALS)
     if document.get("version")!=4 or not document.get("candidates"):
         raise RuntimeError("Valid seasonal candidates not available")
     stamp=dt.datetime.fromisoformat(document["generated_at"])
-    if (now-stamp).total_seconds()>5*86400:
+    if (now-stamp).total_seconds()>5*86400 or stamp>now+dt.timedelta(minutes=5):
         raise RuntimeError("Seasonal candidate file older than 5 days; fail closed")
 
     candidates={x["ticker"]:x for x in document["candidates"]
@@ -131,11 +150,15 @@ def main():
         day,price=market[ticker]
         if not fresh[ticker]:continue
         position["peak_price"]=max(position.get("peak_price",position["entry_price"]),price)
-        candidate=candidates.get(ticker)
-        if candidate:
+        # Lock the exit date at entry. Do not let a later scanner change it.
+        if position.get("planned_exit_date"):
+            seasonal_exit=dt.date.fromisoformat(position["planned_exit_date"])
+        elif ticker in candidates:
             entry=dt.date.fromisoformat(position["entry_date"])
-            seasonal_exit=entry+dt.timedelta(days=int(candidate["holding_calendar_days"]))
+            seasonal_exit=entry+dt.timedelta(days=int(candidates[ticker]["holding_calendar_days"]))
+            position["planned_exit_date"]=seasonal_exit.isoformat()
         else:
+            # Legacy position with no scheduled exit: prioritize closure.
             seasonal_exit=today
         reason=None
         if price<=position["entry_price"]*(1-STOP_LOSS_FRACTION):
@@ -160,16 +183,25 @@ def main():
             unit_cost=price*(1+SLIPPAGE_FRACTION)
             qty=math.floor(max(0,budget)/unit_cost/FRACTIONAL_SHARE_STEP)*FRACTIONAL_SHARE_STEP
             qty=round(qty,3)
-            if qty>0:trade(state,today,ticker,"BUY",qty,price,
-                            "Passed historic holdout; scheduled calendar window")
+            if qty>0 and trade(state,today,ticker,"BUY",qty,price,
+                            "Passed historic holdout; scheduled calendar window"):
+                planned=today+dt.timedelta(days=int(candidate["holding_calendar_days"]))
+                state["positions"][ticker]["planned_exit_date"]=planned.isoformat()
+                state["positions"][ticker]["season_entry_month_day"]=candidate["entry_month_day"]
 
-    # This portfolio is intentionally whole-share only. 500 USD may be
-    # too small to purchase some expensive ETFs with 20% position cap.
+    # Fractional shares are synthetic accounting units, not broker fills.
     equity=state["cash"]+sum(p["qty"]*market[t][1] for t,p in state["positions"].items())
     state["peak_equity"]=max(state["peak_equity"],equity)
+    invested=sum(p["qty"]*market[t][1] for t,p in state["positions"].items())
     state["equity_history"].append({"date":today.isoformat(),
         "equity_usd":round(equity,2),"cash_usd":round(state["cash"],2),
+        "invested_usd":round(invested,2),
+        "drawdown_pct":round(100*(equity/state["peak_equity"]-1),3),
         "positions":len(state["positions"]),"quotes_fresh":all(fresh.values())})
+    state["quotes"]={t:{"date":day.isoformat(),"close_usd":round(price,5)}
+                     for t,(day,price) in market.items()}
+    state["equity_history"]=state["equity_history"][-MAX_HISTORY:]
+    state["trades"]=state["trades"][-MAX_TRADES:]
     state["last_processed_market_day"]=today.isoformat()
     state["last_run"]=now.isoformat()
     state["last_error"]=None
