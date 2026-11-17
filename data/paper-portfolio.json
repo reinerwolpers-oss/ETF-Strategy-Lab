@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "mode": "PAPER_ONLY",
+  "trading_enabled": true,
+  "starting_cash": 500.0,
+  "cash": 500.0,
+  "positions": {},
+  "trades": [],
+  "equity_history": [
+    {
+      "date": "2026-11-17",
+      "equity_usd": 500.0,
+      "cash_usd": 500.0,
+      "positions": 0,
+      "quotes_fresh": true
+    }
+  ],
+  "peak_equity": 500.0,
+  "halted": false,
+  "halt_reason": null,
+  "last_run": "2026-11-17T19:52:53.017917+00:00",
+  "last_error": null,
+  "last_processed_market_day": "2026-11-17"
+}
