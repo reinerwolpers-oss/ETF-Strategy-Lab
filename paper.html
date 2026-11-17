@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ETF Saison-Bot 4.2 · Paper-Trading</title>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ETF Saison-Bot 4.3 · Paper-Trading</title>
 <style>
 :root{color-scheme:dark;--bg:#0a1120;--panel:#17233b;--line:#344561;--txt:#edf5ff;--muted:#a4b7d0;--mint:#66e1bd;--red:#ff9cab}
 *{box-sizing:border-box}body{background:var(--bg);color:var(--txt);font:15px/1.55 system-ui,sans-serif;margin:0}main{max-width:1100px;margin:auto;padding:26px 15px 70px}
@@ -12,7 +12,7 @@ a{color:var(--mint)}.badge{display:inline-block;background:#204a40;color:#98eed5
 table{border-collapse:collapse;width:100%;min-width:620px}th,td{border-bottom:1px solid var(--line);padding:11px;text-align:left}th{font-size:12px;color:var(--muted)}button{background:var(--mint);color:#062921;border:0;border-radius:10px;padding:10px 15px;font-weight:800;cursor:pointer}ul{padding-left:20px}.chart{width:100%;height:260px;display:block}.tools{display:flex;gap:10px;flex-wrap:wrap}.tools button{background:#283f5c;color:#fff}.riskrow{padding:8px 0;border-bottom:1px solid var(--line)}@media(max-width:740px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head>
 <body><main><nav><a href="./">← ETF Strategy Lab</a> · <a href="./seasonal.html">Saison-Scanner</a></nav>
-<h1>🧪 ETF Saison Paper-Trading 4.2</h1>
+<h1>🧪 ETF Saison Paper-Trading 4.3</h1>
 <p><span class="badge">NUR VIRTUELLES DEPOT · KEINE BROKERORDERS</span></p>
 <div class="warn">Das ist eine vereinfachte Simulation mit historischen Tages-Schlusskursen in USD. „Käufe“ und „Verkäufe“ sind lediglich Einträge im virtuellen Depot, keine echte Ausführung. Es gibt keine IBKR-Verbindung. Ein ausgeführter Test zum Schlusskurs wäre real nicht garantiert. Keine Renditeversprechen.</div>
 <div class="grid" style="margin-top:15px">
@@ -22,6 +22,7 @@ table{border-collapse:collapse;width:100%;min-width:620px}th,td{border-bottom:1p
 <div class="metric"><span class="muted">Bot-Status</span><b id="mode" style="font-size:19px">–</b></div>
 </div>
 <section class="panel"><h2>Letzte Aktualisierung</h2><p id="updated">Lade …</p><div class="tools"><button id="refresh">Status aktualisieren</button><button id="csv">Transaktionen als CSV</button><a href="https://github.com/reinerwolpers-oss/ETF-Strategy-Lab/actions/workflows/paper-trading.yml">GitHub-Läufe prüfen</a><a href="https://github.com/reinerwolpers-oss/ETF-Strategy-Lab/blob/main/config/paper-settings.json">Paper-Not-Stopp</a></div><p class="muted">Der automatische Paper-Lauf erfolgt werktags um 23:30 UTC über GitHub Actions. GitHub kann planmäßige Läufe verzögern. Aktualisieren lädt nur den veröffentlichten Stand.</p></section>
+<section class="panel"><h2>🔍 Tägliche ETF-Entscheidungen</h2><p class="muted">Transparente Gründe für Warten, Sperren oder Beobachten. Keine echten Handelssignale.</p><div id="decisionMeta" class="muted">Bericht wird geladen …</div><div class="wrap"><table><thead><tr><th>ETF</th><th>Entscheidung</th><th>Begründung</th><th>Kursdatum</th></tr></thead><tbody id="decisionRows"><tr><td colspan="4">Noch keine bestätigte Auswertung.</td></tr></tbody></table></div></section>
 <section class="panel"><h2>Virtuelle Depotentwicklung</h2><canvas id="curve" class="chart" aria-label="Virtuelle Depotkurve"></canvas><div id="riskSummary" class="muted">Lade …</div></section><section class="panel"><h2>Bevorstehende saisonale Fenster</h2><p id="calendar">Lade …</p></section><section class="panel"><h2>Offene virtuelle Positionen</h2><div class="wrap"><table><thead><tr><th>ETF-Ticker</th><th>Stück</th><th>Simulierter Einstieg in USD</th><th>Einstiegsdatum</th><th>Ausstieg geplant</th><th>Letzter Kurs</th><th>Unrealisiert</th></tr></thead><tbody id="positions"><tr><td colspan="7">Lade …</td></tr></tbody></table></div></section>
 <section class="panel"><h2>Virtuelle Transaktionen</h2><div class="wrap"><table><thead><tr><th>Datum</th><th>ETF</th><th>Aktion</th><th>Stück</th><th>Simulierter Preis (USD)</th><th>Grund</th></tr></thead><tbody id="trades"><tr><td colspan="6">Lade …</td></tr></tbody></table></div></section>
 <section class="panel"><h2>Sicherheitsregeln</h2><ul>
@@ -48,6 +49,35 @@ function chart(history){
  ctx.beginPath();ctx.strokeStyle='#66e1bd';ctx.lineWidth=2.5;
  values.forEach((v,i)=>{let x=45+(values.length===1?.5:i/(values.length-1))*(w-58),y=15+(high-v)/(high-low||1)*(h-46);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y)});ctx.stroke();
  ctx.fillText(history[0].date,45,h-7);ctx.fillText(history.at(-1).date,Math.max(45,w-112),h-7);
+}
+async function decisions(){
+ try {
+  const response=await fetch('./data/paper-decisions.json?cache='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw Error('Der automatische Entscheidungsbericht wurde noch nicht veröffentlicht.');
+  const report=await response.json();
+  if(report.version!==1||report.mode!=='PAPER_ONLY'||!Array.isArray(report.decisions))
+   throw Error('Ungültiges Berichtsformat.');
+  const hours=(Date.now()-Date.parse(report.generated_at))/3600000;
+  const reportFresh=Number.isFinite(hours)&&hours>=-1&&hours<=48;
+  const flags=[];
+  if(!reportFresh)flags.push('Bericht veraltet');
+  if(!report.bot_fresh)flags.push('Paper-Bot nicht aktuell');
+  if(!report.season_fresh)flags.push('Saisondaten veraltet');
+  if(report.kill_switch_active)flags.push('Not-Stopp aktiv');
+  if(report.portfolio_halted)flags.push('Risikostopp aktiv');
+  $('decisionMeta').textContent='Bericht: '+report.generated_at+
+   ' · Letzter erfolgreicher Börsentag: '+(report.last_market_day||'keiner')+
+   (flags.length?' · ⚠ '+flags.join(' · '):' · Datenstatus innerhalb der Prüfgrenzen');
+  renderRows('decisionRows',report.decisions.map(x=>[
+    x.ticker,
+    !reportFresh?'NICHT AKTUELL':x.action,
+    !reportFresh?'Der veröffentlichte Bericht ist älter als 48 Stunden. '+x.reason:x.reason,
+    x.last_quote_date||'Kein gespeicherter Kurs'
+   ]),4,'Noch keine ETF-Prüfungen.');
+ }catch(e){
+   $('decisionMeta').textContent='Entscheidungsbericht nicht verfügbar: '+e.message;
+   renderRows('decisionRows',[],4,'Keine geprüften aktuellen Entscheidungen.');
+ }
 }
 async function calendar(){
  try{
@@ -77,5 +107,5 @@ $('updated').textContent='Letzter Lauf: '+(d.last_run||'noch keiner')+' | '+(d.h
 renderRows('positions',Object.entries(d.positions||{}).map(([ticker,p])=>{const price=d.quotes?.[ticker]?.close_usd;return [ticker,p.qty,money(p.entry_price),p.entry_date,p.planned_exit_date||'Noch nicht gespeichert',price?money(price):'–',price?money((price-p.entry_price)*p.qty):'–']}),7,'Keine offenen virtuellen Positionen.');
 renderRows('trades',(d.trades||[]).slice(-40).reverse().map(x=>[x.date,x.ticker,x.side,x.qty,money(x.estimated_price_usd),x.reason]),6,'Noch keine virtuellen Käufe oder Verkäufe. Es werden keine rückwirkenden Positionen eröffnet.');
 }catch(e){$('updated').textContent='Keine verifizierten Paper-Daten: '+e.message;$('mode').textContent='Nicht bestätigt';}}
-$('refresh').onclick=()=>{load();calendar()};$('csv').onclick=saveCsv;load();calendar();
+$('refresh').onclick=()=>{load();calendar();decisions()};$('csv').onclick=saveCsv;load();calendar();decisions();
 </script></body></html>
