@@ -18,6 +18,8 @@ STATE=ROOT/"data"/"paper-portfolio.json"
 SIGNALS=ROOT/"data"/"seasonal-signals.json"
 START_CASH=500.0
 MAX_POSITION_FRACTION=0.20
+# Fractional shares are a virtual modeling choice, NOT a guarantee of IBKR execution.
+FRACTIONAL_SHARE_STEP=0.001
 MAX_INVESTED_FRACTION=0.60
 STOP_LOSS_FRACTION=0.08
 MAX_DRAWDOWN_FRACTION=0.10
@@ -106,8 +108,10 @@ def main():
                 if x.get("passes_validation") and x["ticker"] in SUPPORTED}
     tickers=set(state["positions"])|set(candidates)
     market={ticker:fetch_close(ticker) for ticker in tickers}
-    # Never execute on the basis of a very stale quote, holidays are skipped.
+    # Never execute on missing/old closes or partial market data.
     fresh={ticker:(day==today) for ticker,(day,price) in market.items()}
+    if not all(fresh.values()):
+        raise RuntimeError("A required ETF has no completed close for today. No virtual orders processed.")
     # Avoid accidentally processing the same closing candle twice.
     last=state.get("last_processed_market_day")
     if last and today.isoformat()<=last:
@@ -154,7 +158,8 @@ def main():
                        max(0,equity*MAX_INVESTED_FRACTION-invested),
                        state["cash"]-FEE_PER_FILL)
             unit_cost=price*(1+SLIPPAGE_FRACTION)
-            qty=int(max(0,budget)//unit_cost)
+            qty=math.floor(max(0,budget)/unit_cost/FRACTIONAL_SHARE_STEP)*FRACTIONAL_SHARE_STEP
+            qty=round(qty,3)
             if qty>0:trade(state,today,ticker,"BUY",qty,price,
                             "Passed historic holdout; scheduled calendar window")
 
@@ -165,15 +170,14 @@ def main():
     state["equity_history"].append({"date":today.isoformat(),
         "equity_usd":round(equity,2),"cash_usd":round(state["cash"],2),
         "positions":len(state["positions"]),"quotes_fresh":all(fresh.values())})
-    state["last_processed_market_day"]=today.isoformat() if all(fresh.values()) else last
+    state["last_processed_market_day"]=today.isoformat()
     state["last_run"]=now.isoformat()
     state["last_error"]=None
     save(state)
     print("PAPER ONLY",today,"equity USD",round(equity,2),
           "positions",len(state["positions"]),"trades",len(state["trades"]),
           "halted",state["halted"])
-    if not all(fresh.values()):
-        raise RuntimeError("Some ETF quotes not from current market day; no new run checkpoint")
+
 
 if __name__=="__main__":
     main()
