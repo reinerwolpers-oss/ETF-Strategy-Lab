@@ -1,4 +1,5 @@
 name: ETF ntfy Testnachricht
+# Diagnostic test run: safe check, no trading actions.
 
 on:
   workflow_dispatch:
