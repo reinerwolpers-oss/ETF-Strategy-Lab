@@ -9,6 +9,7 @@ on:
     paths:
       - 'scripts/paper_trade.py'
       - 'scripts/paper_decisions.py'
+      - 'scripts/daily_quotes.py'
       - 'config/paper-settings.json'
       - 'tests/test_paper_safety.py'
       - '.github/workflows/paper-trading.yml'
@@ -31,10 +32,13 @@ jobs:
           python-version: '3.12'
       - name: Verify Python syntax and safety mode
         run: |
-          python -m py_compile scripts/paper_trade.py scripts/paper_decisions.py
+          python -m py_compile scripts/paper_trade.py scripts/paper_decisions.py scripts/daily_quotes.py
           python -c 'import json; c=json.load(open("config/paper-settings.json")); assert c["mode"]=="PAPER_ONLY" and c["broker_connection"] is False and c["live_orders"] is False'
       - name: Offline paper safety tests
         run: python -m unittest discover -s tests -p 'test_paper_*.py' -v
+      - name: Read five daily ETF prices
+        id: quotes
+        run: python scripts/daily_quotes.py
       - name: Simulate paper portfolio only
         run: python scripts/paper_trade.py
       - name: Build daily decision report
@@ -43,7 +47,7 @@ jobs:
       - name: Persist virtual state and decision report
         if: always()
         run: |
-          git add data/paper-portfolio.json data/paper-decisions.json
+          git add data/paper-portfolio.json data/paper-decisions.json data/daily-etf-quotes.json
           if git diff --cached --quiet; then
             echo "No paper state changes"
             exit 0
@@ -52,3 +56,14 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Update virtual ETF paper portfolio"
           git push
+      - name: Optional ntfy error alert
+        if: ${{ failure() }}
+        env:
+          NTFY_TOPIC: ${{ secrets.ETF_NTFY_TOPIC }}
+          NTFY_SERVER: ${{ secrets.ETF_NTFY_SERVER }}
+        run: |
+          if [ -z "$NTFY_TOPIC" ]; then
+            echo "No ETF_NTFY_TOPIC configured; optional push skipped."
+            exit 0
+          fi
+          python scripts/notify_ntfy.py
