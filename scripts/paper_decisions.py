@@ -14,6 +14,7 @@ PORTFOLIO=ROOT/"data"/"paper-portfolio.json"
 SEASON=ROOT/"data"/"seasonal-signals.json"
 SETTINGS=ROOT/"config"/"paper-settings.json"
 OUT=ROOT/"data"/"paper-decisions.json"
+QUOTES=ROOT/"data"/"daily-etf-quotes.json"
 SUPPORTED=("VT","QQQ","SMH","MTUM","BND")
 
 def load(path):
@@ -49,6 +50,8 @@ def build(now=None):
     except (TypeError,ValueError):
         season_age=1e9
     season_fresh=season.get("version")==4 and -1<=season_age<=5
+    daily=load(QUOTES) if QUOTES.exists() else {}
+    snapshot_quotes=daily.get("quotes",{})
     quotes=portfolio.get("quotes",{})
     candidates={x.get("ticker"):x for x in season.get("candidates",[])
                 if x.get("ticker") in SUPPORTED}
@@ -56,7 +59,8 @@ def build(now=None):
     for ticker in SUPPORTED:
         candidate=candidates.get(ticker)
         position=portfolio.get("positions",{}).get(ticker)
-        quote=quotes.get(ticker,{})
+        quote=snapshot_quotes.get(ticker) or quotes.get(ticker,{})
+        quote_status=quote.get("status","UNKNOWN") if quote else "MISSING"
         if not season_fresh:
             reason="Saison-Scanner veraltet oder ungültig"
             action="DATA_BLOCKED"
@@ -96,6 +100,8 @@ def build(now=None):
             "has_position":bool(position),
             "planned_exit_date":position.get("planned_exit_date") if position else None,
             "last_quote_date":quote.get("date"),
+            "last_quote_usd":quote.get("close_usd"),
+            "quote_status":quote_status,
             "historical_validation_pass":bool(candidate and candidate.get("passes_validation"))
         })
     result={
@@ -103,6 +109,9 @@ def build(now=None):
         "source":"Read-only explanation based on stored paper and seasonal JSON",
         "last_paper_run":last_run,
         "last_market_day":portfolio.get("last_processed_market_day"),
+        "quote_snapshot_generated_at":daily.get("generated_at"),
+        "quote_snapshot_status":daily.get("status","MISSING"),
+        "quote_errors":daily.get("errors",{}),
         "bot_fresh":bot_fresh,"season_fresh":season_fresh,
         "kill_switch_active":not settings.get("enabled",False),
         "portfolio_halted":bool(portfolio.get("halted")),
