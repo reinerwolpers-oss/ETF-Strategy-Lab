@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ETF Strategy Lab 4.0 · Saison-Scanner</title>
+<style>
+:root{color-scheme:dark}body{margin:0;background:#0b1324;color:#edf5ff;font:15px/1.6 system-ui,sans-serif}
+main{max-width:1000px;margin:auto;padding:30px 18px 80px}h1{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:8px 0}
+h2{margin:0 0 12px;font-size:20px}p{color:#acbdd4}a{color:#68dec4}header{margin-bottom:24px}
+.panel{background:#172239;border:1px solid #354660;border-radius:18px;padding:21px;margin:16px 0}
+.pill{display:inline-block;padding:5px 11px;border-radius:20px;background:#235049;color:#8df0cb;font-size:12px}
+.warn{background:#312937;border:1px solid #786047;color:#ffe3a8;padding:14px;border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:700px}th,td{text-align:left;border-bottom:1px solid #354660;padding:12px 10px}td.num,th.num{text-align:right}
+.wrap{overflow-x:auto}.good{color:#73eac4}.bad{color:#ff9ba9}.muted{color:#a5b5ce}
+button{background:#60dfc3;color:#0b2027;padding:10px 15px;border:0;border-radius:9px;font-weight:800;cursor:pointer}
+</style></head><body><main>
+<header><a href="./">← ETF Strategy Lab 3.0</a><div class="pill">RESEARCH · KEIN LIVEHANDEL</div>
+<h1>📅 ETF-Saison-Scanner 4.0</h1>
+<p>Automatisierte Suche nach wiederkehrenden Kauf- und Verkaufsfenstern. Auswahl ausschließlich mit früheren Trainingsjahren, danach Prüfung an unabhängig zurückgehaltenen Jahren.</p></header>
+<div class="warn"><strong>Keine Kaufempfehlungen und keine Orders.</strong> Saisonale Muster können Zufall sein. Fünf ETFs und viele Zeitfenster werden getestet, daher besteht trotz separater Validierung ein erhebliches Überanpassungsrisiko. Die Ergebnisse enthalten vereinfachte Kosten, aber keine Steuern, keine vollständige Währungsumrechnung und keine realen Ausführungskurse.</div>
+<section class="panel"><h2>Datensatz</h2><div id="status" class="muted">Lade Ergebnisse …</div><button id="refresh">Daten erneut laden</button></section>
+<section class="panel"><h2>Gefundene Saisonfenster</h2>
+<div class="wrap"><table><thead><tr><th>ETF-Proxy</th><th>Kaufdatum (jährlich)</th><th>Haltedauer</th><th class="num">Training Ø netto</th><th class="num">Test Ø netto</th><th class="num">Trefferquote Test</th><th class="num">Schlechtestes Testjahr</th><th>Prüfung</th></tr></thead><tbody id="rows"><tr><td colspan="8">Noch keine Daten</td></tr></tbody></table></div></section>
+<section class="panel"><h2>Beobachtungsfenster aktuell</h2><div id="signals" class="muted">Wird geprüft …</div></section>
+<section class="panel"><h2>So arbeitet der Algorithmus</h2>
+<p>Für VT, QQQ, SMH, MTUM und BND werden historische bereinigte Tageskurse verwendet. Der Scanner untersucht für jeden ETF einen 7-Tage-Raster möglicher Einstiegstermine mit Haltedauern von 14, 21, 28, 42 und 56 Kalendertagen. Die beste Variante wird anhand älterer Jahre gewählt. Erst danach wird diese feste Variante an späteren Jahren bewertet.</p>
+<p>Eine positive Prüfung ist keine Garantie. Unser nächster Ausbauschritt wäre ein langfristiger rollierender Walk-Forward-Test und ein virtuelles Depot mit Positionslimits und Verlustkontrolle. Live-Orders sind bewusst nicht vorhanden.</p>
+</section></main><script>
+const $=id=>document.getElementById(id);
+const percentage=x=>(100*x).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+async function load(){
+ $('status').textContent='Lade veröffentlichte Saison-Daten …';
+ try{
+  const response=await fetch('./data/seasonal-signals.json?x='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw Error('Die Ergebnisse sind noch nicht veröffentlicht. Prüfe den GitHub-Actions-Workflow „Saisonale ETF-Fenster scannen“.');
+  const d=await response.json();
+  if(d.version!==4||!Array.isArray(d.candidates))throw Error('Unerwartetes Datenformat.');
+  $('status').textContent='Zuletzt erzeugt: '+d.generated_at+' · Training: '+d.training_years.join(', ')+' · unabhängiger Test: '+d.holdout_years.join(', ')+' · Kurswährung: '+d.currency+' · angenommene Kosten je Kauf+Verkauf: '+percentage(d.roundtrip_cost_assumption);
+  const body=$('rows');body.replaceChildren();
+  for(const a of d.candidates){
+   const tr=document.createElement('tr');
+   const vals=[a.ticker+' · '+a.description,a.entry_month_day,a.holding_calendar_days+' Tage',percentage(a.training.mean_net_return),percentage(a.validation.mean_net_return),percentage(a.validation.win_rate),percentage(a.validation.worst_net_return),a.passes_validation?'Bestanden':'Nicht bestanden'];
+   vals.forEach((v,i)=>{const td=document.createElement('td');td.textContent=v;if([3,4,5,6].includes(i))td.className='num';if(i===7)td.className=a.passes_validation?'good':'bad';tr.appendChild(td)});
+   body.appendChild(tr)
+  }
+  if(!d.candidates.length)body.innerHTML='<tr><td colspan="8">Keine auswertbaren Kandidaten.</td></tr>';
+  $('signals').textContent=d.seasonal_windows.length?d.seasonal_windows.map(a=>a.ticker+': '+a.entry_date+' bis '+a.planned_exit_date+' · '+a.stage+' · NUR BEOBACHTUNG').join(' | '):'Derzeit kein validiertes Saisonfenster innerhalb von sieben Tagen vor dem Einstieg bis zum geplanten Ausstieg.';
+ }catch(e){$('status').textContent='Keine bestätigten Saison-Daten: '+e.message;$('rows').innerHTML='<tr><td colspan="8">Nicht verfügbar. Keine Signale.</td></tr>';$('signals').textContent='Keine Signale ohne gültige Daten.'}
+}
+$('refresh').onclick=load;load();
+</script></body></html>
