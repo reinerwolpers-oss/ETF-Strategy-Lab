@@ -1,0 +1,48 @@
+name: ETF 4.5 Kauf-Push Probelauf
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/test-paper-buy-push.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test-paper-buy-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run offline notification tests
+        run: python -m unittest discover -s tests -p 'test_paper_notifications.py' -v
+      - name: Send one labeled example of a VIRTUAL ETF purchase
+        env:
+          NTFY_TOPIC: ${{ secrets.ETF_NTFY_TOPIC }}
+        run: |
+          python - <<'PY'
+          import os
+          from scripts.notify_paper_events import topic_from_secret, message, send_ntfy
+
+          raw = os.environ.get("NTFY_TOPIC", "")
+          if not raw.strip():
+              raise SystemExit("Missing ETF_NTFY_TOPIC; no test message sent")
+          topic = topic_from_secret(raw)
+          example = {
+              "kind": "PAPER_BUY",
+              "ticker": "VT",
+              "qty": 0.123,
+              "price_usd": 100.0,
+              "date": "2026-11-17",
+              "reason": "REINER PUSH-FUNKTIONSTEST, KEIN ECHTER ODER VIRTUELL VERBUCHTER KAUF"
+          }
+          title, body, priority = message(example)
+          # Explicitly distinguish example from a real paper trade.
+          send_ntfy(topic, "TEST: " + title, "TESTNACHRICHT, KEINE TRANSAKTION. " + body, priority)
+          print("ETF 4.5 sample buy push accepted by ntfy (iPhone receipt not verified).")
+          PY
