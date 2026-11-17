@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "generated_at": "2026-11-17T20:42:44.902601+00:00",
+  "mode": "PAPER_ONLY",
+  "source": "Read-only explanation based on stored paper and seasonal JSON",
+  "last_paper_run": "2026-11-17T19:52:53.017917+00:00",
+  "last_market_day": "2026-11-17",
+  "bot_fresh": true,
+  "season_fresh": true,
+  "kill_switch_active": false,
+  "portfolio_halted": false,
+  "portfolio_halt_reason": null,
+  "positions": 0,
+  "trades": 0,
+  "decisions": [
+    {
+      "ticker": "VT",
+      "action": "REJECTED",
+      "reason": "Historische Validierungsgrenzen nicht bestanden",
+      "has_position": false,
+      "planned_exit_date": null,
+      "last_quote_date": null,
+      "historical_validation_pass": false
+    },
+    {
+      "ticker": "QQQ",
+      "action": "WAIT",
+      "reason": "Eintrittsfenster dieses Jahres vorbei; nächste Prüfung 2027-05-28",
+      "has_position": false,
+      "planned_exit_date": null,
+      "last_quote_date": null,
+      "historical_validation_pass": true
+    },
+    {
+      "ticker": "SMH",
+      "action": "WAIT",
+      "reason": "Eintrittsfenster dieses Jahres vorbei; nächste Prüfung 2027-10-08",
+      "has_position": false,
+      "planned_exit_date": null,
+      "last_quote_date": null,
+      "historical_validation_pass": true
+    },
+    {
+      "ticker": "MTUM",
+      "action": "REJECTED",
+      "reason": "Historische Validierungsgrenzen nicht bestanden",
+      "has_position": false,
+      "planned_exit_date": null,
+      "last_quote_date": null,
+      "historical_validation_pass": false
+    },
+    {
+      "ticker": "BND",
+      "action": "REJECTED",
+      "reason": "Historische Validierungsgrenzen nicht bestanden",
+      "has_position": false,
+      "planned_exit_date": null,
+      "last_quote_date": null,
+      "historical_validation_pass": false
+    }
+  ],
+  "disclaimer": "Explanatory observations only. Not executable signals, broker orders, or live price feed."
+}
