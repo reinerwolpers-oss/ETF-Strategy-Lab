@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "generated_at": "2026-11-17T21:02:35.019622+00:00",
+  "generated_at": "2026-11-17T21:15:18.987190+00:00",
   "mode": "PAPER_ONLY",
   "source": "Read-only explanation based on stored paper and seasonal JSON",
   "last_paper_run": "2026-11-17T19:52:53.017917+00:00",
   "last_market_day": "2026-11-17",
-  "quote_snapshot_generated_at": "2026-11-17T21:02:34.020853+00:00",
+  "quote_snapshot_generated_at": "2026-11-17T21:15:17.739552+00:00",
   "quote_snapshot_status": "RECENT",
   "quote_errors": {},
   "bot_fresh": true,
@@ -23,7 +23,7 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": "2026-11-17",
-      "last_quote_usd": 150.66,
+      "last_quote_usd": 150.64999,
       "quote_status": "RECENT",
       "historical_validation_pass": false
     },
