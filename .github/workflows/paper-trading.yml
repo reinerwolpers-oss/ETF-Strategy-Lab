@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/paper_trade.py'
+      - 'scripts/notify_paper_events.py'
       - 'scripts/paper_decisions.py'
       - 'scripts/daily_quotes.py'
       - 'config/paper-settings.json'
@@ -32,7 +33,7 @@ jobs:
           python-version: '3.12'
       - name: Verify Python syntax and safety mode
         run: |
-          python -m py_compile scripts/paper_trade.py scripts/paper_decisions.py scripts/daily_quotes.py
+          python -m py_compile scripts/paper_trade.py scripts/paper_decisions.py scripts/daily_quotes.py scripts/notify_paper_events.py
           python -c 'import json; c=json.load(open("config/paper-settings.json")); assert c["mode"]=="PAPER_ONLY" and c["broker_connection"] is False and c["live_orders"] is False'
       - name: Offline paper safety tests
         run: python -m unittest discover -s tests -p 'test_paper_*.py' -v
@@ -41,6 +42,11 @@ jobs:
         run: python scripts/daily_quotes.py
       - name: Simulate paper portfolio only
         run: python scripts/paper_trade.py
+      - name: Notify only on new virtual trades or risk stops
+        if: success()
+        env:
+          NTFY_TOPIC: ${{ secrets.ETF_NTFY_TOPIC }}
+        run: python scripts/notify_paper_events.py
       - name: Build daily decision report
         if: always()
         run: python scripts/paper_decisions.py
