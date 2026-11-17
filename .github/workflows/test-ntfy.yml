@@ -24,7 +24,6 @@ jobs:
       - name: Send harmless test notification
         env:
           NTFY_TOPIC: ${{ secrets.ETF_NTFY_TOPIC }}
-          NTFY_SERVER: ${{ secrets.ETF_NTFY_SERVER }}
           NTFY_TEST_MODE: '1'
           NTFY_REQUIRE_TOPIC: '1'
         run: python scripts/notify_ntfy.py
