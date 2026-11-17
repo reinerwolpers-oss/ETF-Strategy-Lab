@@ -1,0 +1,140 @@
+{
+  "version": 4,
+  "generated_at": "2026-11-17T19:45:37.368208+00:00",
+  "currency": "USD",
+  "source": "Yahoo Finance unofficial adjusted daily close",
+  "training_years": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+  ],
+  "holdout_years": [
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "roundtrip_cost_assumption": 0.004,
+  "search": "7-day entry grid; 14/21/28/42/56-day holds; one best trained candidate per ETF",
+  "disclaimer": "RESEARCH ONLY. No orders. Multiple testing, index membership, price and currency risks apply. Signals not verified trading instructions.",
+  "candidates": [
+    {
+      "ticker": "SMH",
+      "description": "Halbleiter",
+      "entry_month_day": "10-08",
+      "holding_calendar_days": 56,
+      "training": {
+        "years": 7,
+        "mean_net_return": 0.071274,
+        "median_net_return": 0.052554,
+        "win_rate": 0.7143,
+        "worst_net_return": -0.029923
+      },
+      "validation": {
+        "years": 4,
+        "mean_net_return": 0.088123,
+        "median_net_return": 0.066908,
+        "win_rate": 0.75,
+        "worst_net_return": -0.00541
+      },
+      "passes_validation": true
+    },
+    {
+      "ticker": "QQQ",
+      "description": "Nasdaq-100",
+      "entry_month_day": "05-28",
+      "holding_calendar_days": 56,
+      "training": {
+        "years": 7,
+        "mean_net_return": 0.065771,
+        "median_net_return": 0.060948,
+        "win_rate": 1.0,
+        "worst_net_return": 0.01179
+      },
+      "validation": {
+        "years": 4,
+        "mean_net_return": 0.044727,
+        "median_net_return": 0.058841,
+        "win_rate": 0.75,
+        "worst_net_return": -0.022521
+      },
+      "passes_validation": true
+    },
+    {
+      "ticker": "VT",
+      "description": "Weltaktien",
+      "entry_month_day": "03-26",
+      "holding_calendar_days": 56,
+      "training": {
+        "years": 7,
+        "mean_net_return": 0.044294,
+        "median_net_return": 0.029436,
+        "win_rate": 1.0,
+        "worst_net_return": 0.003275
+      },
+      "validation": {
+        "years": 4,
+        "mean_net_return": -0.006499,
+        "median_net_return": 0.026711,
+        "win_rate": 0.75,
+        "worst_net_return": -0.125954
+      },
+      "passes_validation": false
+    },
+    {
+      "ticker": "MTUM",
+      "description": "Momentum-Faktor",
+      "entry_month_day": "04-02",
+      "holding_calendar_days": 56,
+      "training": {
+        "years": 7,
+        "mean_net_return": 0.06044,
+        "median_net_return": 0.028193,
+        "win_rate": 1.0,
+        "worst_net_return": 0.000806
+      },
+      "validation": {
+        "years": 4,
+        "mean_net_return": -0.012806,
+        "median_net_return": -0.013981,
+        "win_rate": 0.5,
+        "worst_net_return": -0.135807
+      },
+      "passes_validation": false
+    },
+    {
+      "ticker": "BND",
+      "description": "US-Anleihen",
+      "entry_month_day": "03-19",
+      "holding_calendar_days": 28,
+      "training": {
+        "years": 7,
+        "mean_net_return": 0.016053,
+        "median_net_return": 0.006364,
+        "win_rate": 1.0,
+        "worst_net_return": 0.000654
+      },
+      "validation": {
+        "years": 4,
+        "mean_net_return": -0.013527,
+        "median_net_return": -0.012929,
+        "win_rate": 0.25,
+        "worst_net_return": -0.030558
+      },
+      "passes_validation": false
+    }
+  ],
+  "seasonal_windows": [
+    {
+      "ticker": "SMH",
+      "entry_date": "2026-10-08",
+      "planned_exit_date": "2026-12-03",
+      "stage": "holding_window",
+      "action": "RESEARCH_ONLY_NO_ORDER"
+    }
+  ]
+}
