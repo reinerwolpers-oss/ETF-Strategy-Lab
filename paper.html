@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ETF Saison-Bot · Paper-Trading</title>
+<style>
+:root{color-scheme:dark;--bg:#0a1120;--panel:#17233b;--line:#344561;--txt:#edf5ff;--muted:#a4b7d0;--mint:#66e1bd;--red:#ff9cab}
+*{box-sizing:border-box}body{background:var(--bg);color:var(--txt);font:15px/1.55 system-ui,sans-serif;margin:0}main{max-width:1100px;margin:auto;padding:26px 15px 70px}
+h1{font-size:clamp(28px,5vw,42px);line-height:1.1;margin:12px 0}h2{font-size:18px;margin:0 0 12px}p{color:var(--muted)}
+a{color:var(--mint)}.badge{display:inline-block;background:#204a40;color:#98eed5;border:1px solid #357e6d;border-radius:30px;padding:6px 12px;font-size:12px;font-weight:800}
+.panel{border:1px solid var(--line);border-radius:16px;padding:19px;background:var(--panel);margin:15px 0}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{padding:16px;border:1px solid var(--line);border-radius:13px;background:#101d31}
+.metric b{display:block;font-size:24px;margin:5px 0}.muted{color:var(--muted);font-size:12px}.danger{color:var(--red)}.good{color:var(--mint)}
+.warn{padding:15px;border:1px solid #826343;border-radius:12px;background:#302735;color:#ffe3ad}.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:620px}th,td{border-bottom:1px solid var(--line);padding:11px;text-align:left}th{font-size:12px;color:var(--muted)}button{background:var(--mint);color:#062921;border:0;border-radius:10px;padding:10px 15px;font-weight:800;cursor:pointer}ul{padding-left:20px}@media(max-width:740px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style></head>
+<body><main><nav><a href="./">← ETF Strategy Lab</a> · <a href="./seasonal.html">Saison-Scanner</a></nav>
+<h1>🧪 ETF Saison Paper-Trading</h1>
+<p><span class="badge">NUR VIRTUELLES DEPOT · KEINE BROKERORDERS</span></p>
+<div class="warn">Das ist eine vereinfachte Simulation mit historischen Tages-Schlusskursen in USD. „Käufe“ und „Verkäufe“ sind lediglich Einträge im virtuellen Depot, keine echte Ausführung. Es gibt keine IBKR-Verbindung. Ein ausgeführter Test zum Schlusskurs wäre real nicht garantiert. Keine Renditeversprechen.</div>
+<div class="grid" style="margin-top:15px">
+<div class="metric"><span class="muted">Virtueller Depotwert</span><b id="equity">–</b></div>
+<div class="metric"><span class="muted">Verfügbares Guthaben</span><b id="cash">–</b></div>
+<div class="metric"><span class="muted">Gewinn / Verlust seit Start</span><b id="profit">–</b></div>
+<div class="metric"><span class="muted">Bot-Status</span><b id="mode" style="font-size:19px">–</b></div>
+</div>
+<section class="panel"><h2>Letzte Aktualisierung</h2><p id="updated">Lade …</p><button id="refresh">Status aktualisieren</button><p class="muted">Der automatische Paper-Lauf erfolgt werktags um 23:30 UTC über GitHub Actions. GitHub kann planmäßige Läufe verzögern. Aktualisieren lädt nur den veröffentlichten Stand.</p></section>
+<section class="panel"><h2>Offene virtuelle Positionen</h2><div class="wrap"><table><thead><tr><th>ETF-Ticker</th><th>Stück</th><th>Simulierter Einstieg in USD</th><th>Einstiegsdatum</th></tr></thead><tbody id="positions"><tr><td colspan="4">Lade …</td></tr></tbody></table></div></section>
+<section class="panel"><h2>Virtuelle Transaktionen</h2><div class="wrap"><table><thead><tr><th>Datum</th><th>ETF</th><th>Aktion</th><th>Stück</th><th>Simulierter Preis (USD)</th><th>Grund</th></tr></thead><tbody id="trades"><tr><td colspan="6">Lade …</td></tr></tbody></table></div></section>
+<section class="panel"><h2>Sicherheitsregeln</h2><ul>
+<li>Startkapital: 500 USD, kein Nachschuss</li><li>Je ETF maximal 20 % des virtuellen Depotwerts beim Einstieg</li>
+<li>Maximal 60 % des Depotwerts insgesamt investiert</li><li>Bei Schlusskursverlust von 8 % gegenüber Einstand: virtueller Verkauf</li>
+<li>Bei Depotverlust von 10 % vom bisherigen Höchststand: keine neuen Käufe</li>
+<li>Nur ganze ETF-Anteile; bei zu geringem Budget bleibt Bargeld uninvestiert</li>
+<li>Geschätzte Handelskosten: 1 USD pro Transaktion und 0,1 % Slippage pro Richtung</li>
+<li>Fehlende oder veraltete Kursdaten: keine neuen Testkäufe</li><li>Not-Stopp: GitHub Actions Workflow „ETF Saison Paper-Trading“ deaktivieren; bereits gespeicherte Ergebnisse bleiben erhalten</li></ul>
+<p class="muted">Nicht modelliert: Steuer, FX-Gebühren, wirkliche Geld-Brief-Spannen, Teilfüllungen, Depotüberträge und ausgefallene Orders. Der Scanner wurde aus historischen Daten ausgewählt und ist nicht als erfolgreiche Vorwärtsstrategie validiert.</p></section>
+</main><script>
+const $=id=>document.getElementById(id),money=v=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'USD'}).format(v);
+function cell(t,v){const x=document.createElement('td');x.textContent=String(v);t.appendChild(x)}
+function renderRows(id,rows,cols,empty){const root=$(id);root.replaceChildren();if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=cols;td.textContent=empty;tr.appendChild(td);root.appendChild(tr);return}for(const row of rows){const tr=document.createElement('tr');row.forEach(x=>cell(tr,x));root.appendChild(tr)}}
+async function load(){try{
+const resp=await fetch('./data/paper-portfolio.json?cache='+Date.now(),{cache:'no-store'});
+if(!resp.ok)throw Error('Der virtuelle Depotstand wurde noch nicht vom GitHub-Workflow erzeugt.');
+const d=await resp.json();if(d.schema!==1||d.mode!=='PAPER_ONLY')throw Error('Unerwartetes Format.');
+const history=d.equity_history||[],last=history.at(-1),equity=last?.equity_usd??d.cash;
+$('equity').textContent=money(equity);$('cash').textContent=money(d.cash);
+const pnl=equity-d.starting_cash;$('profit').textContent=(pnl>=0?'+':'')+money(pnl);
+$('profit').className=pnl>=0?'good':'danger';
+$('mode').textContent=!d.trading_enabled?'Deaktiviert':d.halted?'Käufe gesperrt':'Simulation aktiv';
+$('mode').className=d.halted||!d.trading_enabled?'danger':'good';
+$('updated').textContent='Letzter Lauf: '+(d.last_run||'noch keiner')+' | '+(d.halt_reason||'kein Risikostopp')+(d.last_error?' | '+d.last_error:'');
+renderRows('positions',Object.entries(d.positions||{}).map(([ticker,p])=>[ticker,p.qty,money(p.entry_price),p.entry_date]),4,'Keine offenen virtuellen Positionen.');
+renderRows('trades',(d.trades||[]).slice(-40).reverse().map(x=>[x.date,x.ticker,x.side,x.qty,money(x.estimated_price_usd),x.reason]),6,'Noch keine virtuellen Käufe oder Verkäufe. Es werden keine rückwirkenden Positionen eröffnet.');
+}catch(e){$('updated').textContent='Keine verifizierten Paper-Daten: '+e.message;$('mode').textContent='Nicht bestätigt';}}
+$('refresh').onclick=load;load();
+</script></body></html>
