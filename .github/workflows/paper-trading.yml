@@ -9,6 +9,7 @@ on:
     paths:
       - 'scripts/paper_trade.py'
       - 'config/paper-settings.json'
+      - 'tests/test_paper_safety.py'
       - '.github/workflows/paper-trading.yml'
 
 permissions:
@@ -31,6 +32,8 @@ jobs:
         run: |
           python -m py_compile scripts/paper_trade.py
           python -c 'import json; c=json.load(open("config/paper-settings.json")); assert c["mode"]=="PAPER_ONLY" and c["broker_connection"] is False and c["live_orders"] is False'
+      - name: Offline paper safety tests
+        run: python -m unittest discover -s tests -p 'test_paper_*.py' -v
       - name: Simulate paper portfolio only
         run: python scripts/paper_trade.py
       - name: Persist simulated state
