@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "generated_at": "2026-11-17T20:46:18.274639+00:00",
+  "generated_at": "2026-11-17T21:02:35.019622+00:00",
   "mode": "PAPER_ONLY",
   "source": "Read-only explanation based on stored paper and seasonal JSON",
   "last_paper_run": "2026-11-17T19:52:53.017917+00:00",
   "last_market_day": "2026-11-17",
-  "quote_snapshot_generated_at": "2026-11-17T20:46:17.455234+00:00",
+  "quote_snapshot_generated_at": "2026-11-17T21:02:34.020853+00:00",
   "quote_snapshot_status": "RECENT",
   "quote_errors": {},
   "bot_fresh": true,
@@ -23,7 +23,7 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": "2026-11-17",
-      "last_quote_usd": 150.48,
+      "last_quote_usd": 150.66,
       "quote_status": "RECENT",
       "historical_validation_pass": false
     },
@@ -34,7 +34,7 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": "2026-11-17",
-      "last_quote_usd": 654.28497,
+      "last_quote_usd": 656.95001,
       "quote_status": "RECENT",
       "historical_validation_pass": true
     },
@@ -45,7 +45,7 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": "2026-11-17",
-      "last_quote_usd": 455.54999,
+      "last_quote_usd": 460.10001,
       "quote_status": "RECENT",
       "historical_validation_pass": true
     },
@@ -56,7 +56,7 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": "2026-11-17",
-      "last_quote_usd": 64.95,
+      "last_quote_usd": 65.3,
       "quote_status": "RECENT",
       "historical_validation_pass": false
     },
@@ -67,7 +67,7 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": "2026-11-17",
-      "last_quote_usd": 70.735,
+      "last_quote_usd": 70.71,
       "quote_status": "RECENT",
       "historical_validation_pass": false
     }
