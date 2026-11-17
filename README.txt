@@ -1,45 +1,47 @@
-ETF Strategy Lab 2.0
+ETF STRATEGY LAB 3.0
 ====================
-AUTOMATISCHE ECHTE ETF-KURSE ÜBER GITHUB PAGES
 
-Die App lädt eine automatisch erzeugte Datei data/etf-prices.json. Ein GitHub-
-Actions-Workflow holt die Daten werktags um 23:15 UTC. Der Kurslieferant ist
-Yahoo Finance (inoffizieller Endpunkt; kann temporär ausfallen oder sperren).
-Der Workflow übernimmt nur vollständige, geprüfte historische Daten. Bei
-Fehlern bleibt die vorhandene Kursdatei unangetastet.
+Live-App:
+https://reinerwolpers-oss.github.io/ETF-Strategy-Lab/
 
-EINRICHTUNG (einmalig)
-1. ZIP entpacken. Den INHALT des Ordners ETF_Strategy_Lab in ein GitHub-Repo
-   hochladen, inklusive des versteckten Ordners .github/workflows.
-2. GitHub Repo -> Settings -> Actions -> General -> Workflow permissions:
-   'Read and write permissions' erlauben, falls nötig.
-3. Unter Actions den Workflow 'ETF-Kursdaten aktualisieren' auswählen und
-   'Run workflow' ausführen. Der Lauf muss erfolgreich (grün) sein. Prüfen,
-   ob data/etf-prices.json danach vorhanden ist.
-4. Repo -> Settings -> Pages -> Deploy from a branch -> main / (root).
-5. Die veröffentlichte GitHub-Pages-URL öffnen. Die App lädt die JSON-Datei
-   selbst; Klick auf 'Kursdaten aktualisieren' lädt die veröffentlichte Datei
-   erneut (es startet KEIN sofortiger neuer Server-Download).
+AUSSTATTUNG
+- Acht ETF-Strategien: Welt, Tech-Offensive, Momentum, Trendfolge,
+  Core-Satellite, Halbleiter-Offensive, Momentum-Faktor, dynamische Rotation.
+- Automatische Strategiewahl: 60 Monate historisches Training, danach
+  separater 36-Monats-Test der zuvor ausgewählten Strategie.
+- Auswahlscore: annualisierte Trainingsrendite minus 0,25 x Betrag
+  des maximalen Drawdowns. Der Testzeitraum beeinflusst diese Wahl nicht.
+- Dies ist ein einmaliger Holdout-Test, KEIN rollierendes Walk-Forward-System.
+- Keine Brokeranbindung, keine automatischen Kauf- oder Verkaufsorders.
 
-LOKAL
-- index.html lässt sich weiterhin per Doppelklick im Browser öffnen.
-- Im file:// Modus werden Demodaten verwendet; für automatische Kursdateien
-  braucht die App Hosting über HTTP(S), z.B. GitHub Pages.
-- CSV-Import funktioniert unabhängig von GitHub.
+KURSDATEN
+Die Datei data/etf-prices.json wird über GitHub Actions werktags nach
+23:15 UTC bei erfolgreicher Verfügbarkeit aktualisiert. Die Datensätze
+umfassen abgeschlossene Monate und stammen aus dem inoffiziellen
+Yahoo-Finance-Chart-Endpunkt. Ein Fehler lässt die vorhandenen Daten intakt.
 
-DATEN UND GRENZEN
-- WORLD = VT (Vanguard Total World Stock ETF)
-- TECH = QQQ (Invesco QQQ Trust, NASDAQ-100, nicht reiner Technologie-ETF)
-- BONDS = BND (Vanguard Total Bond Market ETF)
-- Alle drei sind US-gelistete Fonds, US-Dollar-denominiert, als Index-Proxys.
-  Die App empfiehlt nicht deren direkten Kauf in Deutschland.
-- Es werden bereinigte Monats-Schlusskurse (adjusted close) aus abgeschlossenen
-  Monaten verwendet, soweit der Datenanbieter sie liefert.
-- Renditen sind USD-Renditen, nicht EUR-Renditen. In Euro ausgewiesene
-  Sparplan-Vermögenswerte sind daher nur hypothetische Recheneinheiten,
-  KEINE belastbaren EUR-Prognosen. Wechselkurse werden nicht gerechnet.
-- Keine Steuern, Transaktionsgebühren oder Brokeranbindung. Eingestellte
-  jährliche Zusatzkosten werden zusätzlich abgezogen.
-- Backtests garantieren keine künftigen Gewinne, insbesondere nicht 20% p.a.
-- Wenn automatische Kursdaten fehlen, fällt die App sichtbar auf Demo-Daten
-  zurück. Sie gibt diese nie als echte Kurse aus.
+Zuordnung: WORLD=VT, TECH=QQQ, BONDS=BND, SEMI=SMH, FACTOR=MTUM.
+Historische USD-adjusted-close-Preise werden mit dem jeweiligen Monatsstand
+von EURUSD=X (USD pro EUR) in EUR umgerechnet.
+FX und ETF können unterschiedliche Schlusszeiten haben. ETF-interne
+Kosten können bereits in Adjusted-Close-Daten enthalten sein.
+
+EINRICHTUNG
+1. GitHub Actions: ETF-Kursdaten aktualisieren ausführen oder auf
+   den automatischen Zeitplan warten.
+2. Auf GitHub Pages veröffentlichen: Settings > Pages >
+   Deploy from a branch > main > /(root) > Save.
+3. Die veröffentlichte Seite öffnen und bei Datensatz 'Online' prüfen,
+   ob 'Echte Kurse geladen' und Version 3 angezeigt werden.
+4. Falls die Datenquelle nicht antwortet, zeigt die App DEMO an.
+   DEMO-Zahlen sind künstlich und keine historischen Gewinne.
+5. Klick 'Kursdaten aktualisieren' lädt lediglich die von GitHub Pages
+   veröffentlichte JSON-Datei neu, startet keinen GitHub-Actions-Job.
+
+HINWEISE
+Die historischen Zahlen sind keine Renditeprognose, insbesondere keine
+Garantie für 20 % pro Jahr. US-gelistete ETFs dienen als Preis-Proxys,
+nicht als konkrete Kaufempfehlungen für Anleger in Deutschland.
+Steuern, Transaktionsgebühren, Spreads, Wechselkosten und tatsächliche
+Order-Ausführung werden nicht vollständig abgebildet.
+Die Simulation trifft keine Handelsentscheidungen im echten Depot.
