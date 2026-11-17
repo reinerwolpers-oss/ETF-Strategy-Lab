@@ -3,7 +3,7 @@
 import datetime as dt
 import json
 import pathlib
-from scripts.paper_trade import fetch_close, SUPPORTED
+from paper_trade import fetch_close, SUPPORTED
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 OUTPUT=ROOT/"data"/"daily-etf-quotes.json"
