@@ -1,0 +1,30 @@
+name: ETF ntfy Testnachricht
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/test-ntfy.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test-ntfy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check test sender syntax
+        run: python -m py_compile scripts/notify_ntfy.py
+      - name: Send harmless test notification
+        env:
+          NTFY_TOPIC: ${{ secrets.ETF_NTFY_TOPIC }}
+          NTFY_SERVER: ${{ secrets.ETF_NTFY_SERVER }}
+          NTFY_TEST_MODE: '1'
+          NTFY_REQUIRE_TOPIC: '1'
+        run: python scripts/notify_ntfy.py
