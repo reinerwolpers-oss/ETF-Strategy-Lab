@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/paper_trade.py'
+      - 'scripts/paper_decisions.py'
       - 'config/paper-settings.json'
       - 'tests/test_paper_safety.py'
       - '.github/workflows/paper-trading.yml'
@@ -30,15 +31,19 @@ jobs:
           python-version: '3.12'
       - name: Verify Python syntax and safety mode
         run: |
-          python -m py_compile scripts/paper_trade.py
+          python -m py_compile scripts/paper_trade.py scripts/paper_decisions.py
           python -c 'import json; c=json.load(open("config/paper-settings.json")); assert c["mode"]=="PAPER_ONLY" and c["broker_connection"] is False and c["live_orders"] is False'
       - name: Offline paper safety tests
         run: python -m unittest discover -s tests -p 'test_paper_*.py' -v
       - name: Simulate paper portfolio only
         run: python scripts/paper_trade.py
-      - name: Persist simulated state
+      - name: Build daily decision report
+        if: always()
+        run: python scripts/paper_decisions.py
+      - name: Persist virtual state and decision report
+        if: always()
         run: |
-          git add data/paper-portfolio.json
+          git add data/paper-portfolio.json data/paper-decisions.json
           if git diff --cached --quiet; then
             echo "No paper state changes"
             exit 0
