@@ -70,13 +70,24 @@ def new_state():
     return {"schema":1,"mode":"PAPER_ONLY","trading_enabled":True,"starting_cash":START_CASH,
             "cash":START_CASH,"positions":{},"trades":[],"equity_history":[],
             "peak_equity":START_CASH,"halted":False,"halt_reason":None,
-            "last_run":None,"last_error":None}
+            "last_run":None,"last_error":None,"notification_outbox":[],"notification_sent_ids":[]}
 
 def save(state):
     STATE.parent.mkdir(parents=True,exist_ok=True)
     tmp=STATE.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(state,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
     os.replace(tmp,STATE)
+
+def add_notification(state, event):
+    """Append a deterministic one-time paper event to a bounded outbox."""
+    if state.get("mode")!="PAPER_ONLY":
+        raise RuntimeError("Notifications allowed only in paper mode")
+    event_id=event["id"]
+    outbox=state.setdefault("notification_outbox",[])
+    sent=state.setdefault("notification_sent_ids",[])
+    if event_id not in sent and not any(e["id"]==event_id for e in outbox):
+        outbox.append(event)
+    state["notification_outbox"]=outbox[-200:]
 
 def trade(state,day,ticker,side,quantity,quote,reason):
     assert quantity>0 and side in ("BUY","SELL")
@@ -92,10 +103,14 @@ def trade(state,day,ticker,side,quantity,quote,reason):
         if ticker not in state["positions"]:return False
         state["cash"]+=amount-FEE_PER_FILL
         del state["positions"][ticker]
-    state["trades"].append({"date":day.isoformat(),"ticker":ticker,
+    new_trade={"date":day.isoformat(),"ticker":ticker,
         "side":side,"qty":quantity,"estimated_price_usd":round(fill,5),
         "estimated_notional_usd":round(amount,4),"fee_usd":FEE_PER_FILL,
-        "reason":reason,"execution":"SYNTHETIC_DAILY_CLOSE_NOT_BROKER_ORDER"})
+        "reason":reason,"execution":"SYNTHETIC_DAILY_CLOSE_NOT_BROKER_ORDER"}
+    state["trades"].append(new_trade)
+    add_notification(state,{"id":f"paper:{day.isoformat()}:{ticker}:{side}",
+        "kind":"PAPER_"+side,"date":day.isoformat(),"ticker":ticker,
+        "qty":quantity,"price_usd":round(fill,5),"reason":reason})
     return True
 
 def main():
@@ -141,9 +156,12 @@ def main():
         p["qty"]*market[t][1] for t,p in state["positions"].items())
     state["peak_equity"]=max(state["peak_equity"],equity)
     drawdown=equity/state["peak_equity"]-1
-    if drawdown<=-MAX_DRAWDOWN_FRACTION:
+    if drawdown<=-MAX_DRAWDOWN_FRACTION and not state.get("halted",False):
         state["halted"]=True
         state["halt_reason"]="Portfolio drawdown breached 10%; buy orders permanently blocked"
+        add_notification(state,{"id":"paper:riskstop:drawdown10",
+            "kind":"PAPER_RISK_STOP","date":today.isoformat(),
+            "reason":state["halt_reason"],"drawdown_pct":round(drawdown*100,2)})
 
     # Manage exits first. Missing fresh prices never trigger fake fills.
     for ticker,position in list(state["positions"].items()):
