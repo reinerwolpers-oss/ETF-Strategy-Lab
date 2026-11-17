@@ -1,10 +1,13 @@
 {
   "version": 1,
-  "generated_at": "2026-11-17T20:42:44.902601+00:00",
+  "generated_at": "2026-11-17T20:46:07.240988+00:00",
   "mode": "PAPER_ONLY",
   "source": "Read-only explanation based on stored paper and seasonal JSON",
   "last_paper_run": "2026-11-17T19:52:53.017917+00:00",
   "last_market_day": "2026-11-17",
+  "quote_snapshot_generated_at": null,
+  "quote_snapshot_status": "MISSING",
+  "quote_errors": {},
   "bot_fresh": true,
   "season_fresh": true,
   "kill_switch_active": false,
@@ -20,6 +23,8 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": null,
+      "last_quote_usd": null,
+      "quote_status": "MISSING",
       "historical_validation_pass": false
     },
     {
@@ -29,6 +34,8 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": null,
+      "last_quote_usd": null,
+      "quote_status": "MISSING",
       "historical_validation_pass": true
     },
     {
@@ -38,6 +45,8 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": null,
+      "last_quote_usd": null,
+      "quote_status": "MISSING",
       "historical_validation_pass": true
     },
     {
@@ -47,6 +56,8 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": null,
+      "last_quote_usd": null,
+      "quote_status": "MISSING",
       "historical_validation_pass": false
     },
     {
@@ -56,6 +67,8 @@
       "has_position": false,
       "planned_exit_date": null,
       "last_quote_date": null,
+      "last_quote_usd": null,
+      "quote_status": "MISSING",
       "historical_validation_pass": false
     }
   ],
