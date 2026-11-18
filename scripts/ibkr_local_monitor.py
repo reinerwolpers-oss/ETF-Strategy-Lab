@@ -13,7 +13,10 @@ import pathlib
 import sys
 import traceback
 
-from ibkr_historical_compare import run_probe
+try:
+    from .ibkr_historical_compare import run_probe
+except ImportError:
+    from ibkr_historical_compare import run_probe
 
 OUT = pathlib.Path.home() / "IBKR-Test"
 SUMMARY = OUT / "ibkr-monitor-status.json"
