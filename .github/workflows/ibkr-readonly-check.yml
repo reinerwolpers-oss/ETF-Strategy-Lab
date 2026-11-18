@@ -1,4 +1,4 @@
-name: IBKR 4.7 Read-Only Sicherheitspruefung
+name: IBKR 4.8 Read-Only Sicherheitspruefung
 
 on:
   workflow_dispatch:
@@ -7,8 +7,11 @@ on:
     paths:
       - 'scripts/ibkr_readonly_probe.py'
       - 'scripts/ibkr_historical_compare.py'
+      - 'scripts/ibkr_local_monitor.py'
+      - 'windows/install_ibkr_monitor_48.ps1'
       - 'tests/test_ibkr_readonly.py'
       - 'tests/test_ibkr_history.py'
+      - 'tests/test_ibkr_monitor.py'
       - '.github/workflows/ibkr-readonly-check.yml'
 
 permissions:
@@ -24,11 +27,12 @@ jobs:
         with:
           python-version: '3.12'
       - name: Syntax validation (no IBKR login)
-        run: python -m py_compile scripts/ibkr_readonly_probe.py scripts/ibkr_historical_compare.py
+        run: python -m py_compile scripts/ibkr_readonly_probe.py scripts/ibkr_historical_compare.py scripts/ibkr_local_monitor.py
       - name: Offline local-demo security tests
         run: |
           python -m unittest discover -s tests -p 'test_ibkr_readonly.py' -v
           python -m unittest discover -s tests -p 'test_ibkr_history.py' -v
+          python -m unittest discover -s tests -p 'test_ibkr_monitor.py' -v
       - name: Verify paper trading broker connection remains disabled
         run: |
           python - <<'PY'
