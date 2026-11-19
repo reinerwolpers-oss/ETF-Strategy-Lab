@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-19T00:58:17.275176+00:00",
+  "generated_at": "2026-11-19T04:20:26.539577+00:00",
   "source": "Yahoo Finance unofficial daily close",
   "currency": "USD",
   "quotes": {
@@ -12,7 +12,7 @@
     },
     "MTUM": {
       "date": "2026-11-18",
-      "close_usd": 65.205,
+      "close_usd": 65.21,
       "age_calendar_days": 1,
       "status": "RECENT"
     },
