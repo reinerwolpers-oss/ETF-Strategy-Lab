@@ -9,10 +9,21 @@ Version 4.8 ist im GitHub-Repository vorbereitet. **Der Windows-Task kann nicht 
 - Vergleicht ausschließlich Kurse vom **gleichen Handelstag**.
 - Markiert Kursabweichungen **ab 1 %**, fehlende Vergleichstage und Datensätze, die **mehr als fünf Kalendertage** alt sind. Feiertage und Zeitzonen können zusätzliche Hinweise auslösen.
 - Schreibt `ibkr-monitor-status.json`, `ibkr-monitor-report.html` und `ibkr-monitor.log` in dein lokales `IBKR-Test`-Verzeichnis.
-- Legt einen Windows-Task an, der **Montag bis Freitag 23:45 Uhr lokale Windows-Zeit** prüft, **nur während du bei Windows angemeldet bist**. Verwendet `pythonw.exe`, daher kein aufpoppendes CMD-Fenster.
+- Legt einen Windows-Task an, der **Montag bis Freitag 20:30 Uhr lokale Windows-Zeit** prüft, **nur während du bei Windows angemeldet bist**. Verwendet `pythonw.exe`, daher kein aufpoppendes CMD-Fenster.
 - Hat **keine Order-, Konto- oder Positionsabfragen**, keine GitHub-Daten-Uploads und keine automatische IBKR-Kursübernahme in den Paper-Bot.
 - Wenn TWS nicht läuft oder Demo keinen Zugriff erlaubt, wird ein Hinweis im lokalen Bericht/Log erzeugt; es gibt keine Ersatz- oder erfundenen Kurse.
 - Warnungen stehen **im lokalen Bericht und Log**, nicht als iPhone-ntfy-Push. Die bestehende ntfy-Benachrichtigung des unabhängigen Paper-Bots bleibt unverändert.
+
+Hinweis: Um 20:30 Uhr ist der US-Börsentag oft noch nicht abgeschlossen. Der Vergleich verwendet nur bereits vorliegende Tagesbalken und darf nicht als endgültiger Schlusskurs des laufenden US-Handelstags interpretiert werden. Die TWS-Demo muss angemeldet und erreichbar sein; der Zeitplan weckt den PC nicht auf.
+
+## Bereits installierten Zeitplan ändern
+
+```powershell
+$task = Get-ScheduledTask -TaskName "ETF-IBKR-Demo-Readonly-Monitor-48"
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday,Thursday,Friday -At "20:30"
+Set-ScheduledTask -InputObject $task -Trigger $trigger
+Get-ScheduledTaskInfo -TaskName "ETF-IBKR-Demo-Readonly-Monitor-48" | Select-Object NextRunTime
+```
 
 ## Einmalig auf Windows installieren
 
