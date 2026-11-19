@@ -19,9 +19,8 @@ Hinweis: Um 20:30 Uhr ist der US-Börsentag oft noch nicht abgeschlossen. Der Ve
 ## Bereits installierten Zeitplan ändern
 
 ```powershell
-$task = Get-ScheduledTask -TaskName "ETF-IBKR-Demo-Readonly-Monitor-48"
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday,Thursday,Friday -At "20:30"
-Set-ScheduledTask -InputObject $task -Trigger $trigger
+Set-ScheduledTask -TaskName "ETF-IBKR-Demo-Readonly-Monitor-48" -Trigger $trigger
 Get-ScheduledTaskInfo -TaskName "ETF-IBKR-Demo-Readonly-Monitor-48" | Select-Object NextRunTime
 ```
 
