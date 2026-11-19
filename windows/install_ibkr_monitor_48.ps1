@@ -29,13 +29,13 @@ if ($LASTEXITCODE -ne 0) { throw "Syntaxprüfung fehlgeschlagen." }
 # TWS must ALREADY be running as Demo on the same logged-in user desktop.
 $script = Join-Path $folder "ibkr_local_monitor.py"
 $action = New-ScheduledTaskAction -Execute $pythonw -Argument ('"' + $script + '"') -WorkingDirectory $folder
-$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday,Thursday,Friday -At "23:45"
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday,Thursday,Friday -At "20:30"
 $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
 $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 4) -MultipleInstances IgnoreNew -StartWhenAvailable
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description "Local IBKR TWS DEMO, read-only QQQ/SMH history check; no trades" -Force | Out-Null
 Write-Host "ETF 4.8: Task registriert: $taskName" -ForegroundColor Green
-Write-Host "Zeit: Montag-Freitag 23:45 lokale Windows-Zeit, nur wenn der Benutzer angemeldet ist."
+Write-Host "Zeit: Montag-Freitag 20:30 lokale Windows-Zeit, nur wenn der Benutzer angemeldet ist."
 Write-Host "TWS-Demo muss geöffnet und schreibgeschützt sein."
 Write-Host "Lokaler Bericht: $folder\ibkr-monitor-report.html"
 Write-Host "Lokales Protokoll: $folder\ibkr-monitor.log"
