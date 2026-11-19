@@ -12,6 +12,7 @@ import pathlib
 import time
 import urllib.parse
 import urllib.request
+from zoneinfo import ZoneInfo
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 STATE=ROOT/"data"/"paper-portfolio.json"
@@ -29,6 +30,23 @@ MAX_DRAWDOWN_FRACTION=0.10
 FEE_PER_FILL=1.0
 SLIPPAGE_FRACTION=0.001
 SUPPORTED={"VT","QQQ","SMH","MTUM","BND"}
+
+MARKET_TZ=ZoneInfo("America/New_York")
+
+def us_market_date(now):
+    """Date of the US trading session, avoiding UTC-midnight rollover."""
+    if now.tzinfo is None:
+        raise ValueError("now must have a timezone")
+    return now.astimezone(MARKET_TZ).date()
+
+def require_same_completed_market_close(market,now):
+    """Fail closed on mixed, missing or earlier dates. No synthetic forward-fills."""
+    expected=us_market_date(now)
+    dates={ticker:day for ticker,(day,price) in market.items()}
+    if not dates or any(day!=expected for day in dates.values()):
+        raise RuntimeError("A required ETF has no completed US market close for "+expected.isoformat()+". No virtual orders processed.")
+    return expected
+
 
 def load_json(path):
     return json.loads(path.read_text(encoding="utf-8"))
@@ -115,7 +133,7 @@ def trade(state,day,ticker,side,quantity,quote,reason):
 
 def main():
     now=dt.datetime.now(dt.timezone.utc)
-    today=now.date()
+    today=us_market_date(now)
     settings=paper_settings()
     state=load_json(STATE) if STATE.exists() else new_state()
     if state.get("mode")!="PAPER_ONLY":raise RuntimeError("Fail closed: invalid trading mode")
@@ -143,9 +161,8 @@ def main():
     tickers=set(state["positions"])|set(candidates)
     market={ticker:fetch_close(ticker) for ticker in tickers}
     # Never execute on missing/old closes or partial market data.
+    today=require_same_completed_market_close(market,now)
     fresh={ticker:(day==today) for ticker,(day,price) in market.items()}
-    if not all(fresh.values()):
-        raise RuntimeError("A required ETF has no completed close for today. No virtual orders processed.")
     # Avoid accidentally processing the same closing candle twice.
     last=state.get("last_processed_market_day")
     if last and today.isoformat()<=last:
