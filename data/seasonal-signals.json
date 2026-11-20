@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "generated_at": "2026-11-19T16:44:36.536126+00:00",
+  "generated_at": "2026-11-20T16:19:03.139342+00:00",
   "currency": "USD",
   "source": "Yahoo Finance unofficial adjusted daily close",
   "training_years": [
@@ -51,16 +51,16 @@
       "training": {
         "years": 7,
         "mean_net_return": 0.065771,
-        "median_net_return": 0.060948,
+        "median_net_return": 0.060949,
         "win_rate": 1.0,
-        "worst_net_return": 0.01179
+        "worst_net_return": 0.011789
       },
       "validation": {
         "years": 4,
         "mean_net_return": 0.044727,
         "median_net_return": 0.058841,
         "win_rate": 0.75,
-        "worst_net_return": -0.02252
+        "worst_net_return": -0.022521
       },
       "passes_validation": true
     },
@@ -72,13 +72,13 @@
       "training": {
         "years": 7,
         "mean_net_return": 0.044294,
-        "median_net_return": 0.029436,
+        "median_net_return": 0.029435,
         "win_rate": 1.0,
         "worst_net_return": 0.003275
       },
       "validation": {
         "years": 4,
-        "mean_net_return": -0.006498,
+        "mean_net_return": -0.006499,
         "median_net_return": 0.026711,
         "win_rate": 0.75,
         "worst_net_return": -0.125954
@@ -93,7 +93,7 @@
       "training": {
         "years": 7,
         "mean_net_return": 0.06044,
-        "median_net_return": 0.028193,
+        "median_net_return": 0.028194,
         "win_rate": 1.0,
         "worst_net_return": 0.000806
       },
@@ -102,7 +102,7 @@
         "mean_net_return": -0.012806,
         "median_net_return": -0.013981,
         "win_rate": 0.5,
-        "worst_net_return": -0.135808
+        "worst_net_return": -0.135807
       },
       "passes_validation": false
     },
@@ -116,7 +116,7 @@
         "mean_net_return": 0.016053,
         "median_net_return": 0.006364,
         "win_rate": 1.0,
-        "worst_net_return": 0.000653
+        "worst_net_return": 0.000652
       },
       "validation": {
         "years": 4,
