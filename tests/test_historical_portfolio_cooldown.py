@@ -17,22 +17,29 @@ class CooldownTests(unittest.TestCase):
         idx=0
         while day<=end:
             if day.weekday()<5:
-                # A market-wide shock across a 2022 seasonal holding window.
-                factor=.65 if dt.date(2022,4,15)<=day<dt.date(2022,6,15) else 1.0
                 for s in SYMBOLS:
-                    series[s][day]=(100+idx*.02)*factor
+                    series[s][day]=100+idx*.02
                 idx+=1
             day+=dt.timedelta(days=1)
         return series
 
     def test_research_capital_and_pause_policy(self):
-        state=simulate(self.synthetic_market(),first=2021,last=2023)
+        prices=self.synthetic_market()
+        baseline=simulate(prices,first=2021,last=2023)
+        first_buy=next(t for t in baseline["trades"] if t["side"]=="BUY")
+        entered=dt.date.fromisoformat(first_buy["date"])
+        # Target a position actually opened by the strategy. An arbitrary
+        # crash date may have no exposure and is not a valid guardrail test.
+        trading_days=sorted(d for d in prices[first_buy["ticker"]] if d>entered)
+        shock_day=trading_days[3]
+        prices[first_buy["ticker"]][shock_day]*=.05
+        state=simulate(prices,first=2021,last=2023)
         self.assertEqual(state["starting_cash_usd"],500)
         self.assertEqual(state["cooldown_sessions"],COOLDOWN_SESSIONS)
         self.assertTrue(all(c["cash_usd"]>=-.001 for c in state["curve"]))
         starts=[e for e in state["cooldown_events"] if e["event"]=="PAUSE_ENTRIES"]
         resumes=[e for e in state["cooldown_events"] if e["event"]=="RESUME_ENTRIES"]
-        self.assertTrue(starts, "Synthetic 2022 shock must invoke 10%-drawdown guard")
+        self.assertTrue(starts, "Targeted shock after actual simulated entry must invoke 10%-drawdown guard")
         self.assertTrue(resumes, "Cooldown must expire and resume entries")
         for event in starts:
             if event["resume_on_or_after"]:
