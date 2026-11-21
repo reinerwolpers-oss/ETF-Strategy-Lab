@@ -25,6 +25,12 @@
 <div id="historyStatus" class="muted">Lade historischen Forschungsbericht …</div>
 <div style="overflow-x:auto"><table><thead><tr><th>ETF</th><th>Beobachtungen 2022–2025</th><th>Ø Saisonfenster netto</th><th>Ø QQQ gleiches Fenster</th></tr></thead><tbody id="historyRows"><tr><td colspan="4">Noch keine Forschungsdaten</td></tr></tbody></table></div>
 <p class="muted">Vergleich enthält keinen simulierten 8-%-Stop, kein Portfolio-Positionsmanagement und keine Steuer-/FX-Effekte. QQQ-Vergleich vor Handelskosten. Diese Werte sind keine Vorwärtsperformance.</p></section>
+<section class="panel"><h2>🧭 Rollierender Walk-Forward-Test</h2>
+<p>Jedes Testjahr wird <strong>nur aus älteren Jahren</strong> kalibriert. Der Test verwendet keine bereits für die aktuelle Strategie ausgewählten Saisonfenster. Er ist trotzdem eine rückblickende Forschungsanalyse, keine unabhängige Vorwärtsvalidierung. Verglichen werden einzelne hypothetische Saisonfenster mit QQQ im selben Zeitraum, keine vollständigen Portfolios.</p>
+<p><a href="https://github.com/reinerwolpers-oss/ETF-Strategy-Lab/actions/workflows/walk-forward-research.yml">Walk-Forward-Test in GitHub Actions manuell starten</a></p>
+<div id="walkStatus" class="muted">Lade Walk-Forward-Bericht …</div>
+<div style="overflow-x:auto"><table><thead><tr><th>ETF</th><th>Getestete Jahre</th><th>Ø Fenster netto</th><th>Ø QQQ gleiches Fenster</th><th>Positive Jahre</th></tr></thead><tbody id="walkRows"><tr><td colspan="5">Noch keine Forschungsdaten</td></tr></tbody></table></div>
+<p class="muted">Angenommene Kosten der Saisonfenster: 0,4 Prozentpunkte; QQQ ohne Handelskosten. Stop-Loss, Portfolio-Regeln, Steuern und Wechselkurse sind hier nicht berücksichtigt.</p></section>
 <section class="panel"><h2>Einordnung</h2><p id="interpretation">Lade Daten …</p><p class="muted">Ein Drawdown wird nur aus den erfassten Tagesständen berechnet. Intraday-Verluste können größer gewesen sein. QQQ ist ein transparenter, aber konzentrierter Aktien-Benchmark, nicht automatisch eine risikogleiche Alternative. Aussagekräftige Performancebewertungen benötigen deutlich mehr Beobachtungen und tatsächliche Strategietransaktionen.</p><button id="refresh">Daten neu laden</button> <span id="status" class="muted"></span></section>
 </main>
 <script>
@@ -89,5 +95,16 @@ async function loadHistorical(){
   if(!d.rows.length)$('historyStatus').textContent='Keine historischen Fenster mit ausreichenden Daten gefunden.';
  }catch(e){$('historyStatus').textContent=e.message}
 }
-$('refresh').onclick=()=>{load();loadHistorical()};load();loadHistorical();
+async function loadWalk(){
+ try{
+  const r=await fetch('./data/walk-forward-research.json?v='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw Error('Noch keine Walk-Forward-Daten. Bitte den GitHub-Workflow einmal starten.');
+  const d=await r.json();if(d.version!==1||d.mode!=='RESEARCH_ONLY'||d.method!=='EXPANDING_WINDOW_RESELECTION'||!Array.isArray(d.rows))throw Error('Unerwartete Walk-Forward-Daten');
+  $('walkStatus').textContent='Testjahre: '+d.first_test_year+' bis '+d.last_completed_test_year+' · Bericht: '+d.generated_at+' · Rückblickende Forschung, kein unabhängiger Live-Test.';
+  const body=$('walkRows');body.replaceChildren();
+  for(const item of d.rows){const tr=document.createElement('tr');const values=[item.ticker,item.observed_test_years,item.mean_net_window_return==null?'–':pct(item.mean_net_window_return),item.mean_qqq_gross_same_window==null?'–':pct(item.mean_qqq_gross_same_window),item.positive_year_fraction==null?'–':pct(item.positive_year_fraction)];for(const value of values){const td=document.createElement('td');td.textContent=value;tr.appendChild(td)}body.appendChild(tr)}
+  if(!d.rows.length)$('walkStatus').textContent='Keine auswertbaren Walk-Forward-Ergebnisse.';
+ }catch(e){$('walkStatus').textContent=e.message}
+}
+$('refresh').onclick=()=>{load();loadHistorical();loadWalk()};load();loadHistorical();loadWalk();
 </script></body></html>
