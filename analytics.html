@@ -31,6 +31,15 @@
 <div id="walkStatus" class="muted">Lade Walk-Forward-Bericht …</div>
 <div style="overflow-x:auto"><table><thead><tr><th>ETF</th><th>Getestete Jahre</th><th>Ø Fenster netto</th><th>Ø QQQ gleiches Fenster</th><th>Positive Jahre</th></tr></thead><tbody id="walkRows"><tr><td colspan="5">Noch keine Forschungsdaten</td></tr></tbody></table></div>
 <p class="muted">Angenommene Kosten der Saisonfenster: 0,4 Prozentpunkte; QQQ ohne Handelskosten. Stop-Loss, Portfolio-Regeln, Steuern und Wechselkurse sind hier nicht berücksichtigt.</p></section>
+<section class="panel"><h2>🧮 Historisches 500-$-Portfolio 5.0</h2>
+<p>Eigenständiger, rückblickender Portfolio-Test mit jährlich neu aus Vorjahren gewählten Saisonfenstern, maximal 20 % je ETF, insgesamt maximal 60 % investiert, 8-%-Stop beim Tages-Schlusskurs, permanentem Kaufstopp ab 10 % Depot-Drawdown, 1 $ je Transaktion und 0,1 % angenommener Slippage je Seite.</p>
+<p><strong>Achtung:</strong> Diese historischen Modellwerte sind <em>nicht</em> die echte Vorwärts-Paper-Performance. Die Simulation verwendet nicht ausführbare Fills zum bereits bekannten Tages-Schlusskurs, bereinigte Preisdaten und keine Steuern oder FX-Kosten.</p>
+<p><a href="https://github.com/reinerwolpers-oss/ETF-Strategy-Lab/actions/workflows/historical-portfolio-50.yml">Historischen Portfolio-Test in GitHub Actions starten</a></p>
+<div id="portfolio50Status" class="muted">Lade historischen Forschungsbericht …</div>
+<div class="grid" style="margin-top:12px"><div class="metric"><small>Historischer Modell-Endwert</small><strong id="historicalEquity">–</strong></div><div class="metric"><small>Historische Modell-Rendite</small><strong id="historicalReturn">–</strong></div><div class="metric"><small>Historischer Max.-Drawdown</small><strong id="historicalDD">–</strong></div><div class="metric"><small>Historische Modell-Trades</small><strong id="historicalTrades">–</strong></div></div>
+<canvas class="chart" id="historicalCurve" aria-label="Historischer Portfolio-Modellwert versus QQQ Buy and Hold"></canvas>
+<div class="legend"><span><i class="key"></i>Historische Portfolio-Simulation</span><span><i class="key blue"></i>QQQ-Buy-and-Hold ohne Kosten</span></div>
+<p id="historicalDetail" class="muted"></p></section>
 <section class="panel"><h2>Einordnung</h2><p id="interpretation">Lade Daten …</p><p class="muted">Ein Drawdown wird nur aus den erfassten Tagesständen berechnet. Intraday-Verluste können größer gewesen sein. QQQ ist ein transparenter, aber konzentrierter Aktien-Benchmark, nicht automatisch eine risikogleiche Alternative. Aussagekräftige Performancebewertungen benötigen deutlich mehr Beobachtungen und tatsächliche Strategietransaktionen.</p><button id="refresh">Daten neu laden</button> <span id="status" class="muted"></span></section>
 </main>
 <script>
@@ -106,5 +115,35 @@ async function loadWalk(){
   if(!d.rows.length)$('walkStatus').textContent='Keine auswertbaren Walk-Forward-Ergebnisse.';
  }catch(e){$('walkStatus').textContent=e.message}
 }
-$('refresh').onclick=()=>{load();loadHistorical();loadWalk()};load();loadHistorical();loadWalk();
+async function loadPortfolio50(){
+ try{
+  const r=await fetch('./data/historical-portfolio-50.json?v='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw Error('Backtest noch nicht ausgeführt. Bitte den manuellen GitHub-Workflow starten.');
+  const d=await r.json();
+  if(d.version!==1||d.mode!=='RESEARCH_ONLY'||d.method!=='PRIOR_YEAR_TRAINED_HISTORICAL_PORTFOLIO'||!Array.isArray(d.curve))throw Error('Unerwartetes historisches Berichtsformat');
+  $('portfolio50Status').textContent='Historische Forschung · Stand: '+d.generated_at+' · Zeitraum: '+d.simulation_start+' bis '+d.simulation_end;
+  $('historicalEquity').textContent=usd(d.paper_ending_equity_usd);
+  $('historicalReturn').textContent=pct(d.paper_total_return);
+  $('historicalDD').textContent=pct(d.paper_max_drawdown);
+  $('historicalTrades').textContent=d.transactions;
+  $('historicalDetail').textContent='QQQ-Modellendwert: '+usd(d.qqq_ending_equity_usd)+' · QQQ-Gesamtrendite: '+pct(d.qqq_total_return)+' · QQQ-Drawdown: '+pct(d.qqq_max_drawdown)+' · Historischer Kaufstopp: '+(d.halted_new_entries?'aktiviert':'nicht ausgelöst')+' · Dies ist keine unabhängig bestätigte Vorwärtsperformance.';
+  // Downsample long series for canvas without editing the original report.
+  const step=Math.max(1,Math.ceil(d.curve.length/500));
+  const rows=d.curve.filter((_,i)=>i%step===0||i===d.curve.length-1);
+  drawHistorical(rows);
+ }catch(e){$('portfolio50Status').textContent=e.message}
+}
+function drawHistorical(rows){
+ const canvas=$('historicalCurve'),ctx=canvas.getContext('2d'),w=canvas.clientWidth||800,h=canvas.clientHeight||300,scale=window.devicePixelRatio||1;
+ canvas.width=w*scale;canvas.height=h*scale;ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,w,h);
+ if(!rows.length)return;
+ const all=rows.flatMap(r=>[r.equity_usd,r.qqq_buy_hold_usd]),low=Math.min(...all)*.95,high=Math.max(...all)*1.05;
+ ctx.strokeStyle='#344561';ctx.fillStyle='#a4b7d0';ctx.font='11px system-ui';
+ const px=i=>48+(rows.length<2?.5:i/(rows.length-1))*(w-62),py=v=>14+(high-v)/(high-low||1)*(h-42);
+ for(let j=0;j<=4;j++){const y=14+j*(h-42)/4;ctx.beginPath();ctx.moveTo(48,y);ctx.lineTo(w-10,y);ctx.stroke();ctx.fillText(Math.round(high-(high-low)*j/4)+' 
+</script></body></html>,2,y+4)}
+ for(const [key,color] of [['equity_usd','#66e1bd'],['qqq_buy_hold_usd','#91b8ff']]){ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.3;rows.forEach((r,i)=>{if(i)ctx.lineTo(px(i),py(r[key]));else ctx.moveTo(px(i),py(r[key]))});ctx.stroke()}
+ ctx.fillStyle='#a4b7d0';ctx.fillText(rows[0].date,48,h-6);ctx.fillText(rows[rows.length-1].date,Math.max(48,w-108),h-6);
+}
+$('refresh').onclick=()=>{load();loadHistorical();loadWalk();loadPortfolio50()};load();loadHistorical();loadWalk();loadPortfolio50();
 </script></body></html>
