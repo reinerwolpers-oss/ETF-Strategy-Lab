@@ -19,6 +19,12 @@
 <p id="benchmarkInfo" class="muted">Wird berechnet …</p></section>
 <section class="panel"><h2>Risiko- und Vergleichsdaten</h2>
 <table><tbody><tr><th>Startkapital</th><td id="capital">…</td></tr><tr><th>Gesamtrendite Paper</th><td id="paperTotal">…</td></tr><tr><th>QQQ-Benchmarkrendite im gemeinsamen Zeitraum</th><td id="qqqTotal">…</td></tr><tr><th>Paper-Rendite im gemeinsamen Zeitraum</th><td id="matchedTotal">…</td></tr><tr><th>Max. beobachteter Paper-Drawdown</th><td id="paperDD">…</td></tr><tr><th>Max. beobachteter QQQ-Drawdown im gemeinsamen Zeitraum</th><td id="qqqDD">…</td></tr><tr><th>Auswertbare Paper-Tagesstände</th><td id="days">…</td></tr><tr><th>Vergleichbare QQQ-Tage</th><td id="matchedDays">…</td></tr><tr><th>Letzter verarbeiteter Handelstag</th><td id="date">…</td></tr><tr><th>Risikostopp</th><td id="halt">…</td></tr></tbody></table></section>
+<section class="panel"><h2>🔬 Separater historischer Fenstervergleich</h2>
+<p>Research-only: Feste, zuvor ausgewählte QQQ- und SMH-Saisonfenster werden mit QQQ-Kaufen-und-Halten für exakt dieselben Handelstage verglichen. Die Jahre 2022–2025 wurden bereits zur Kandidatenfreigabe verwendet und sind <strong>kein unberührter unabhängiger Test</strong>. Es werden keine virtuellen Depottransaktionen nachgetragen.</p>
+<p><a href="https://github.com/reinerwolpers-oss/ETF-Strategy-Lab/actions/workflows/historical-window-review.yml">Historischen Backtest in GitHub Actions manuell starten</a></p>
+<div id="historyStatus" class="muted">Lade historischen Forschungsbericht …</div>
+<div style="overflow-x:auto"><table><thead><tr><th>ETF</th><th>Beobachtungen 2022–2025</th><th>Ø Saisonfenster netto</th><th>Ø QQQ gleiches Fenster</th></tr></thead><tbody id="historyRows"><tr><td colspan="4">Noch keine Forschungsdaten</td></tr></tbody></table></div>
+<p class="muted">Vergleich enthält keinen simulierten 8-%-Stop, kein Portfolio-Positionsmanagement und keine Steuer-/FX-Effekte. QQQ-Vergleich vor Handelskosten. Diese Werte sind keine Vorwärtsperformance.</p></section>
 <section class="panel"><h2>Einordnung</h2><p id="interpretation">Lade Daten …</p><p class="muted">Ein Drawdown wird nur aus den erfassten Tagesständen berechnet. Intraday-Verluste können größer gewesen sein. QQQ ist ein transparenter, aber konzentrierter Aktien-Benchmark, nicht automatisch eine risikogleiche Alternative. Aussagekräftige Performancebewertungen benötigen deutlich mehr Beobachtungen und tatsächliche Strategietransaktionen.</p><button id="refresh">Daten neu laden</button> <span id="status" class="muted"></span></section>
 </main>
 <script>
@@ -72,5 +78,16 @@ async function load(){
   $('status').textContent='Datenstand: '+(s.last_run||'unbekannt');
  }catch(e){$('status').textContent='Fehler: '+e.message;$('benchmarkInfo').textContent='Keine verifizierbaren Vergleichsdaten';}
 }
-$('refresh').onclick=load;load();
+async function loadHistorical(){
+ try{
+  const r=await fetch('./data/historical-window-review.json?v='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw Error('Noch kein historischer Bericht. Den Research-Workflow einmal manuell starten.');
+  const d=await r.json();if(d.mode!=='RESEARCH_ONLY'||d.version!==1||!Array.isArray(d.rows))throw Error('Unerwartetes Forschungsformat');
+  $('historyStatus').textContent='Research-Datenstand: '+d.generated_at+' · Bereits zur Auswahl verwendete Jahre sind KEIN neuer unabhängiger Test.';
+  const body=$('historyRows');body.replaceChildren();
+  for(const item of d.rows){const tr=document.createElement('tr');const columns=[item.ticker,item.holdout_sample_count,item.holdout_mean_net_return==null?'–':pct(item.holdout_mean_net_return),item.holdout_mean_qqq_same_window==null?'–':pct(item.holdout_mean_qqq_same_window)];for(const v of columns){const td=document.createElement('td');td.textContent=v;tr.appendChild(td)}body.appendChild(tr)}
+  if(!d.rows.length)$('historyStatus').textContent='Keine historischen Fenster mit ausreichenden Daten gefunden.';
+ }catch(e){$('historyStatus').textContent=e.message}
+}
+$('refresh').onclick=()=>{load();loadHistorical()};load();loadHistorical();
 </script></body></html>
