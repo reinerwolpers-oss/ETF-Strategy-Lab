@@ -1,0 +1,32 @@
+name: ETF historische Fenster prüfen (Research Only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etf-historical-research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Nur historische Saisonfenster analysieren
+        run: python scripts/historical_window_review.py
+      - name: Forschungsdaten separat speichern
+        run: |
+          git add data/historical-window-review.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update historical window research only"
+          git pull --rebase
+          git push
