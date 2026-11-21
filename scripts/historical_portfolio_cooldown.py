@@ -16,7 +16,9 @@ from paper_trade import (START_CASH, MAX_POSITION_FRACTION, MAX_INVESTED_FRACTIO
 DEST=ROOT/"data"/"historical-portfolio-cooldown.json"
 COOLDOWN_SESSIONS=30
 
-def simulate(series, first=FIRST_TEST_YEAR, last=2025):
+def simulate(series, first=FIRST_TEST_YEAR, last=2025, cooldown_sessions=COOLDOWN_SESSIONS):
+    if type(cooldown_sessions) is not int or cooldown_sessions<1:
+        raise ValueError('Cooldown must be a positive integer number of common trading sessions')
     if "QQQ" not in series or first>last:
         raise ValueError("QQQ and valid year range required")
     symbols=sorted(SYMBOLS)
@@ -73,7 +75,7 @@ def simulate(series, first=FIRST_TEST_YEAR, last=2025):
         peak=max(peak,equity())
         if not halted and equity()/peak-1<=-MAX_DRAWDOWN_FRACTION:
             halted=True
-            cooldown_until_idx=idx+COOLDOWN_SESSIONS
+            cooldown_until_idx=idx+cooldown_sessions
             cooldown_events.append({'date':date.isoformat(),'event':'PAUSE_ENTRIES','resume_on_or_after':dates[cooldown_until_idx].isoformat() if cooldown_until_idx<len(dates) else None})
         for s,p in list(positions.items()):
             px=market[s]
@@ -108,7 +110,7 @@ def simulate(series, first=FIRST_TEST_YEAR, last=2025):
         peak=max(peak,value)
         if not halted and value/peak-1<=-MAX_DRAWDOWN_FRACTION:
             halted=True
-            cooldown_until_idx=idx+COOLDOWN_SESSIONS
+            cooldown_until_idx=idx+cooldown_sessions
             cooldown_events.append({'date':date.isoformat(),'event':'PAUSE_ENTRIES','resume_on_or_after':dates[cooldown_until_idx].isoformat() if cooldown_until_idx<len(dates) else None})
         benchmark=START_CASH*market["QQQ"]/baseline
         curve.append({"date":date.isoformat(),"equity_usd":round(value,2),
@@ -131,7 +133,7 @@ def simulate(series, first=FIRST_TEST_YEAR, last=2025):
             "qqq_total_return":round(ending["qqq_buy_hold_usd"]/START_CASH-1,6),
             "paper_max_drawdown":round(maximum_drawdown([START_CASH]+[p["equity_usd"] for p in curve]),6),
             "qqq_max_drawdown":round(maximum_drawdown([START_CASH]+[p["qqq_buy_hold_usd"] for p in curve]),6),
-            "halted_new_entries":halted,"cooldown_sessions":COOLDOWN_SESSIONS,"cooldown_events":cooldown_events,"transactions":len(trades),
+            "halted_new_entries":halted,"cooldown_sessions":cooldown_sessions,"cooldown_events":cooldown_events,"transactions":len(trades),
             "open_positions_at_end":{s:{"quantity":p["qty"],"planned_exit_date":p["exit_target"].isoformat()} for s,p in positions.items()},
             "selections":{str(y):{s:{"entry_target":v["entry_target"].isoformat(),"holding_days":v["duration"],"training_samples":v["training_samples"]} for s,v in row.items()} for y,row in selected.items()},
             "trades":trades,"curve":curve}
