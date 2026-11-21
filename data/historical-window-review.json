@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "mode": "RESEARCH_ONLY",
+  "generated_at": "2026-11-21T07:25:36.414565+00:00",
+  "source": "Yahoo Finance unofficial adjusted daily closes; locked calendar windows from data/seasonal-signals.json",
+  "training_years": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+  ],
+  "holdout_years": [
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "roundtrip_cost_assumption": 0.004,
+  "important_limitation": "Holdout years were already used to accept or reject candidates. These results are retrospective diagnostics, NOT a new independent or untouched out-of-sample test. Fixed-window return is NOT full portfolio return and omits stop-loss, capital sizing, FX and taxes. QQQ benchmark is before costs.",
+  "rows": [
+    {
+      "ticker": "SMH",
+      "description": "Halbleiter",
+      "entry_month_day": "10-08",
+      "holding_calendar_days": 56,
+      "observations": [
+        {
+          "year": 2015,
+          "cohort": "TRAINING",
+          "entry_date": "2015-10-08",
+          "exit_date": "2015-12-03",
+          "gross_return": 0.056554,
+          "net_window_return": 0.052554,
+          "qqq_same_window_return": 0.060914,
+          "excess_vs_qqq": -0.00836
+        },
+        {
+          "year": 2016,
+          "cohort": "TRAINING",
+          "entry_date": "2016-10-10",
+          "exit_date": "2016-12-02",
+          "gross_return": -0.009078,
+          "net_window_return": -0.013078,
+          "qqq_same_window_return": -0.029525,
+          "excess_vs_qqq": 0.016447
+        },
+        {
+          "year": 2017,
+          "cohort": "TRAINING",
+          "entry_date": "2017-10-09",
+          "exit_date": "2017-12-01",
+          "gross_return": 0.039975,
+          "net_window_return": 0.035975,
+          "qqq_same_window_return": 0.047461,
+          "excess_vs_qqq": -0.011486
+        },
+        {
+          "year": 2018,
+          "cohort": "TRAINING",
+          "entry_date": "2018-10-08",
+          "exit_date": "2018-12-03",
+          "gross_return": -0.025923,
+          "net_window_return": -0.029923,
+          "qqq_same_window_return": -0.037531,
+          "excess_vs_qqq": 0.007608
+        },
+        {
+          "year": 2019,
+          "cohort": "TRAINING",
+          "entry_date": "2019-10-08",
+          "exit_date": "2019-12-03",
+          "gross_return": 0.110024,
+          "net_window_return": 0.106024,
+          "qqq_same_window_return": 0.086236,
+          "excess_vs_qqq": 0.019788
+        },
+        {
+          "year": 2020,
+          "cohort": "TRAINING",
+          "entry_date": "2020-10-08",
+          "exit_date": "2020-12-03",
+          "gross_return": 0.161689,
+          "net_window_return": 0.157689,
+          "qqq_same_window_return": 0.081269,
+          "excess_vs_qqq": 0.07642
+        },
+        {
+          "year": 2021,
+          "cohort": "TRAINING",
+          "entry_date": "2021-10-08",
+          "exit_date": "2021-12-03",
+          "gross_return": 0.182139,
+          "net_window_return": 0.178139,
+          "qqq_same_window_return": 0.060832,
+          "excess_vs_qqq": 0.117307
+        },
+        {
+          "year": 2022,
+          "cohort": "HOLDOUT_USED_FOR_GATING",
+          "entry_date": "2022-10-10",
+          "exit_date": "2022-12-02",
+          "gross_return": 0.228086,
+          "net_window_return": 0.224086,
+          "qqq_same_window_return": 0.098119,
+          "excess_vs_qqq": 0.125967
+        },
+        {
+          "year": 2023,
+          "cohort": "HOLDOUT_USED_FOR_GATING",
+          "entry_date": "2023-10-09",
+          "exit_date": "2023-12-01",
+          "gross_return": 0.088937,
+          "net_window_return": 0.084937,
+          "qqq_same_window_return": 0.063782,
+          "excess_vs_qqq": 0.021155
+        },
+        {
+          "year": 2024,
+          "cohort": "HOLDOUT_USED_FOR_GATING",
+          "entry_date": "2024-10-08",
+          "exit_date": "2024-12-03",
+          "gross_return": -0.016236,
+          "net_window_return": -0.020236,
+          "qqq_same_window_return": 0.056346,
+          "excess_vs_qqq": -0.076582
+        },
+        {
+          "year": 2025,
+          "cohort": "HOLDOUT_USED_FOR_GATING",
+          "entry_date": "2025-10-08",
+          "exit_date": "2025-12-03",
+          "gross_return": 0.052879,
+          "net_window_return": 0.048879,
+          "qqq_same_window_return": 0.019757,
+          "excess_vs_qqq": 0.029122
+        }
+      ],
+      "holdout_sample_count": 4,
+      "holdout_mean_net_return": 0.084417,
+      "holdout_mean_qqq_same_window": 0.059501
+    },
+    {
+      "ticker": "QQQ",
+      "description": "Nasdaq-100",
+      "entry_month_day": "05-28",
+      "holding_calendar_days": 56,
+      "observations": [
+        {
+          "year": 2015,
+          "cohort": "TRAINING",
+          "entry_date": "2015-05-28",
+          "exit_date": "2015-07-23",
+          "gross_return": 0.01579,
+          "net_window_return": 0.01179,
+          "qqq_same_window_return": 0.01579,
+          "excess_vs_qqq": -0.004
+        },
+        {
+          "year": 2016,
+          "cohort": "TRAINING",
+          "entry_date": "2016-05-31",
+          "exit_date": "2016-07-22",
+          "gross_return": 0.032742,
+          "net_window_return": 0.028742,
+          "qqq_same_window_return": 0.032742,
+          "excess_vs_qqq": -0.004
+        },
+        {
+          "year": 2017,
+          "cohort": "TRAINING",
+          "entry_date": "2017-05-30",
+          "exit_date": "2017-07-21",
+          "gross_return": 0.022375,
+          "net_window_return": 0.018375,
+          "qqq_same_window_return": 0.022375,
+          "excess_vs_qqq": -0.004
+        },
+        {
+          "year": 2018,
+          "cohort": "TRAINING",
+          "entry_date": "2018-05-29",
+          "exit_date": "2018-07-23",
+          "gross_return": 0.064948,
+          "net_window_return": 0.060948,
+          "qqq_same_window_return": 0.064948,
+          "excess_vs_qqq": -0.004
+        },
+        {
+          "year": 2019,
+          "cohort": "TRAINING",
+          "entry_date": "2019-05-28",
+          "exit_date": "2019-07-23",
+          "gross_return": 0.09425,
+          "net_window_return": 0.09025,
+          "qqq_same_window_return": 0.09425,
+          "excess_vs_qqq": -0.004
+        },
+        {
+          "year": 2020,
+          "cohort": "TRAINING",
+          "entry_date": "2020-05-28",
+          "exit_date": "2020-07-23",
+          "gross_return": 0.123782,
+          "net_window_return": 0.119782,
+          "qqq_same_window_return": 0.123782,
+          "excess_vs_qqq": -0.004
+        },
+        {
+          "year": 2021,
+          "cohort": "TRAINING",
+          "entry_date": "2021-05-28",
+          "exit_date": "2021-07-23",
+          "gross_return": 0.103905,
+          "net_window_return": 0.099905,
+          "qqq_same_window_return": 0.103905,
+          "excess_vs_qqq": -0.004
+        },
+        {
+          "year": 2022,
+          "cohort": "HOLDOUT_USED_FOR_GATING",
+          "entry_date": "2022-05-31",
+          "exit_date": "2022-07-22",
+          "gross_return": -0.018521,
+          "net_window_return": -0.022521,
+          "qqq_same_window_return": -0.018521,
+          "excess_vs_qqq": -0.004
+        },
+        {
+          "year": 2023,
+          "cohort": "HOLDOUT_USED_FOR_GATING",
+          "entry_date": "2023-05-30",
+          "exit_date": "2023-07-21",
+          "gross_return": 0.074762,
+          "net_window_return": 0.070762,
+          "qqq_same_window_return": 0.074762,
+          "excess_vs_qqq": -0.004
+        },
+        {
+          "year": 2024,
+          "cohort": "HOLDOUT_USED_FOR_GATING",
+          "entry_date": "2024-05-28",
+          "exit_date": "2024-07-23",
+          "gross_return": 0.047215,
+          "net_window_return": 0.043215,
+          "qqq_same_window_return": 0.047215,
+          "excess_vs_qqq": -0.004
+        },
+        {
+          "year": 2025,
+          "cohort": "HOLDOUT_USED_FOR_GATING",
+          "entry_date": "2025-05-28",
+          "exit_date": "2025-07-23",
+          "gross_return": 0.087748,
+          "net_window_return": 0.083748,
+          "qqq_same_window_return": 0.087748,
+          "excess_vs_qqq": -0.004
+        }
+      ],
+      "holdout_sample_count": 4,
+      "holdout_mean_net_return": 0.043801,
+      "holdout_mean_qqq_same_window": 0.047801
+    }
+  ]
+}
