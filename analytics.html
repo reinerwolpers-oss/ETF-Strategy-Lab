@@ -140,8 +140,7 @@ function drawHistorical(rows){
  const all=rows.flatMap(r=>[r.equity_usd,r.qqq_buy_hold_usd]),low=Math.min(...all)*.95,high=Math.max(...all)*1.05;
  ctx.strokeStyle='#344561';ctx.fillStyle='#a4b7d0';ctx.font='11px system-ui';
  const px=i=>48+(rows.length<2?.5:i/(rows.length-1))*(w-62),py=v=>14+(high-v)/(high-low||1)*(h-42);
- for(let j=0;j<=4;j++){const y=14+j*(h-42)/4;ctx.beginPath();ctx.moveTo(48,y);ctx.lineTo(w-10,y);ctx.stroke();ctx.fillText(Math.round(high-(high-low)*j/4)+' 
-</script></body></html>,2,y+4)}
+ for(let j=0;j<=4;j++){const y=14+j*(h-42)/4;ctx.beginPath();ctx.moveTo(48,y);ctx.lineTo(w-10,y);ctx.stroke();ctx.fillText(Math.round(high-(high-low)*j/4)+' USD',2,y+4)}
  for(const [key,color] of [['equity_usd','#66e1bd'],['qqq_buy_hold_usd','#91b8ff']]){ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.3;rows.forEach((r,i)=>{if(i)ctx.lineTo(px(i),py(r[key]));else ctx.moveTo(px(i),py(r[key]))});ctx.stroke()}
  ctx.fillStyle='#a4b7d0';ctx.fillText(rows[0].date,48,h-6);ctx.fillText(rows[rows.length-1].date,Math.max(48,w-108),h-6);
 }
