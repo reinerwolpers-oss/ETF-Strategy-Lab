@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ETF Saison-Bot 4.9 | Performance und Risiko</title>
+<style>
+:root{color-scheme:dark;--bg:#0a1120;--panel:#17233b;--border:#344561;--text:#edf5ff;--muted:#a4b7d0;--green:#66e1bd;--blue:#91b8ff;--red:#ff9cab}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,sans-serif}main{max-width:1100px;margin:auto;padding:25px 16px 75px}h1{font-size:clamp(29px,5vw,42px);margin:10px 0}h2{font-size:19px;margin:0 0 12px}p,.muted{color:var(--muted)}a{color:var(--green)}.pill{display:inline-block;background:#204a40;color:#a3efd7;border-radius:99px;padding:6px 12px;font-size:12px;font-weight:700}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric,.panel{border:1px solid var(--border);background:var(--panel);border-radius:16px;padding:17px}.metric small{display:block;color:var(--muted)}.metric strong{display:block;font-size:24px;margin:5px 0}.panel{margin-top:17px}.notice{background:#2e2938;border:1px solid #806742;border-radius:12px;padding:14px;color:#ffe1ac}.chart{display:block;width:100%;height:300px}.legend{display:flex;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:13px}.key{display:inline-block;width:12px;height:3px;vertical-align:middle;margin-right:6px;background:var(--green)}.key.blue{background:var(--blue)}table{border-collapse:collapse;width:100%}td,th{text-align:left;border-bottom:1px solid var(--border);padding:12px 8px}th{color:var(--muted);font-size:13px}td:last-child{text-align:right}button{border:0;border-radius:8px;background:var(--green);color:#042620;padding:10px 15px;font-weight:bold;cursor:pointer}.red{color:var(--red)}@media(max-width:730px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.metric strong{font-size:19px}}
+</style></head><body><main>
+<nav><a href="./paper.html">← Paper-Depot</a> · <a href="./">Strategie-Labor</a></nav>
+<h1>📊 Performance & Risiko 4.9</h1>
+<p><span class="pill">PAPER ONLY · KEINE BROKERORDERS</span></p>
+<p class="notice">Die Auswertung verwendet ausschließlich veröffentlichte, tatsächlich gespeicherte Paper-Tagesstände. Ein QQQ-Buy-and-Hold-Vergleich startet erst ab dem ersten gemeinsamen Beobachtungstag mit Vergleichskursen. Es gibt weder rückgerechnete virtuelle Trades noch behauptete historische Performance. Alle Beträge sind USD, ohne Steuern, Währungsumrechnung und echte Orderausführung.</p>
+<div class="grid">
+ <div class="metric"><small>Virtueller Depotwert</small><strong id="equity">…</strong></div>
+ <div class="metric"><small>Paper-Rendite seit Start</small><strong id="return">…</strong></div>
+ <div class="metric"><small>Max. beobachteter Drawdown</small><strong id="drawdown">…</strong></div>
+ <div class="metric"><small>Virtuelle Transaktionen</small><strong id="trades">…</strong></div>
+</div>
+<section class="panel"><h2>Depotentwicklung gegen QQQ kaufen & halten</h2><canvas class="chart" id="curve" aria-label="Depot und QQQ Benchmark, auf gemeinsamen Startwert normiert"></canvas>
+<div class="legend"><span><i class="key"></i>Paper-Depot</span><span><i class="key blue"></i>QQQ Buy-and-Hold (normalisiert, ohne Gebühren)</span></div>
+<p id="benchmarkInfo" class="muted">Wird berechnet …</p></section>
+<section class="panel"><h2>Risiko- und Vergleichsdaten</h2>
+<table><tbody><tr><th>Startkapital</th><td id="capital">…</td></tr><tr><th>Gesamtrendite Paper</th><td id="paperTotal">…</td></tr><tr><th>QQQ-Benchmarkrendite im gemeinsamen Zeitraum</th><td id="qqqTotal">…</td></tr><tr><th>Paper-Rendite im gemeinsamen Zeitraum</th><td id="matchedTotal">…</td></tr><tr><th>Max. beobachteter Paper-Drawdown</th><td id="paperDD">…</td></tr><tr><th>Max. beobachteter QQQ-Drawdown im gemeinsamen Zeitraum</th><td id="qqqDD">…</td></tr><tr><th>Auswertbare Paper-Tagesstände</th><td id="days">…</td></tr><tr><th>Vergleichbare QQQ-Tage</th><td id="matchedDays">…</td></tr><tr><th>Letzter verarbeiteter Handelstag</th><td id="date">…</td></tr><tr><th>Risikostopp</th><td id="halt">…</td></tr></tbody></table></section>
+<section class="panel"><h2>Einordnung</h2><p id="interpretation">Lade Daten …</p><p class="muted">Ein Drawdown wird nur aus den erfassten Tagesständen berechnet. Intraday-Verluste können größer gewesen sein. QQQ ist ein transparenter, aber konzentrierter Aktien-Benchmark, nicht automatisch eine risikogleiche Alternative. Aussagekräftige Performancebewertungen benötigen deutlich mehr Beobachtungen und tatsächliche Strategietransaktionen.</p><button id="refresh">Daten neu laden</button> <span id="status" class="muted"></span></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const usd=n=>Number(n).toLocaleString('de-DE',{style:'currency',currency:'USD'});
+const pct=n=>(n*100).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' %';
+const valid=n=>typeof n==='number'&&Number.isFinite(n)&&n>0;
+function dd(a){let peak=-Infinity,worst=0;for(const n of a){peak=Math.max(peak,n);if(peak>0)worst=Math.min(worst,n/peak-1)}return worst}
+function draw(items){
+ const c=$('curve'),ctx=c.getContext('2d'),w=c.clientWidth||800,h=c.clientHeight||300,dpr=window.devicePixelRatio||1;c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+ if(!items.length){ctx.fillStyle='#a4b7d0';ctx.fillText('Noch keine Vergleichsdaten vorhanden',15,28);return}
+ const values=items.flatMap(x=>[x.paper,x.qqq]).filter(Number.isFinite),lo=Math.min(...values,100),hi=Math.max(...values,100);const pad=Math.max(1,(hi-lo)*0.1),min=lo-pad,max=hi+pad;
+ ctx.font='12px system-ui';ctx.fillStyle='#a4b7d0';ctx.strokeStyle='#354866';ctx.lineWidth=1;
+ for(let k=0;k<=4;k++){let y=18+k*(h-54)/4;ctx.beginPath();ctx.moveTo(50,y);ctx.lineTo(w-10,y);ctx.stroke();ctx.fillText((max-(max-min)*k/4).toFixed(1),4,y+4)}
+ const y=n=>18+(max-n)/(max-min)*(h-54),x=i=>50+(items.length===1?.5:i/(items.length-1))*(w-62);
+ for(const [key,color] of [['paper','#66e1bd'],['qqq','#91b8ff']]){ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;items.forEach((a,i)=>{if(i)ctx.lineTo(x(i),y(a[key]));else ctx.moveTo(x(i),y(a[key]))});ctx.stroke()}
+ ctx.fillStyle='#a4b7d0';ctx.fillText(items[0].date,50,h-7);ctx.fillText(items[items.length-1].date,Math.max(50,w-105),h-7);
+}
+async function load(){
+ $('status').textContent='Aktualisiere …';
+ try{
+  const response=await fetch('./data/paper-portfolio.json?ts='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw Error('Paper-Daten konnten nicht geladen werden');
+  const s=await response.json();if(s.mode!=='PAPER_ONLY'||!Array.isArray(s.equity_history)||!Array.isArray(s.trades))throw Error('Unerwartete Paper-Daten');
+  const all=s.equity_history.filter(x=>typeof x.date==='string'&&valid(Number(x.equity_usd))).sort((a,b)=>a.date.localeCompare(b.date));
+  const start=Number(s.starting_cash),last=all.at(-1),equity=last?Number(last.equity_usd):start;
+  if(!valid(start))throw Error('Startkapital fehlt');
+  $('equity').textContent=usd(equity);$('return').textContent=pct(equity/start-1);$('drawdown').textContent=all.length?pct(dd([start,...all.map(x=>Number(x.equity_usd))])):'Nicht verfügbar';
+  $('trades').textContent=s.trades.length;$('capital').textContent=usd(start);$('paperTotal').textContent=pct(equity/start-1);
+  $('paperDD').textContent=all.length?pct(dd([start,...all.map(x=>Number(x.equity_usd))])):'Nicht verfügbar';
+  $('days').textContent=all.length;$('date').textContent=s.last_processed_market_day||'Nicht verfügbar';
+  $('halt').textContent=s.halted?'Aktiv: '+(s.halt_reason||'Risikogrenze erreicht'):'Nicht aktiv';
+  const shared=all.filter(x=>valid(Number(x.benchmark_qqq_close_usd)));
+  $('matchedDays').textContent=shared.length;
+  if(shared.length<2){
+   $('qqqTotal').textContent='Noch nicht berechenbar';$('matchedTotal').textContent='Noch nicht berechenbar';$('qqqDD').textContent='Noch nicht berechenbar';
+   $('benchmarkInfo').textContent='Für einen seriösen Vergleich werden mindestens zwei gemeinsame Kurs- und Depotstände benötigt. Ab Version 4.9 werden neue QQQ-Schlusskurse mit jedem erfolgreichen Paper-Lauf gespeichert.';
+   $('interpretation').textContent='Das virtuelle Depot hat noch '+s.trades.length+' Transaktionen. Ohne ausreichend lange Beobachtung und abgeschlossene Trades ist kein belastbarer Strategie-Vorteil messbar.';
+   draw([]);
+  }else{
+   const first=shared[0],initialPaper=Number(first.equity_usd),initialQQQ=Number(first.benchmark_qqq_close_usd);
+   const curve=shared.map(x=>({date:x.date,paper:100*Number(x.equity_usd)/initialPaper,qqq:100*Number(x.benchmark_qqq_close_usd)/initialQQQ}));
+   const lastShared=shared.at(-1);
+   $('qqqTotal').textContent=pct(Number(lastShared.benchmark_qqq_close_usd)/initialQQQ-1);
+   $('matchedTotal').textContent=pct(Number(lastShared.equity_usd)/initialPaper-1);
+   $('qqqDD').textContent=pct(dd(curve.map(x=>x.qqq)));
+   $('benchmarkInfo').textContent='Gemeinsamer Vergleichszeitraum: '+first.date+' bis '+lastShared.date+'. Beide Reihen sind zu Beginn auf 100 normiert. QQQ Buy-and-Hold ohne Kosten oder Dividendenkorrektur; Paper-Depot nach den modellierten Transaktionskosten.';
+   $('interpretation').textContent='Der QQQ-Vergleich zeigt nur die Entwicklung im gemeinsamen Zeitraum. '+(shared.length<30?'Die bisherige Stichprobe ist sehr klein. ':'')+'Aus wenigen Tagen und '+s.trades.length+' virtuellen Transaktionen lässt sich keine zuverlässige Überrendite ableiten.';
+   draw(curve);
+  }
+  $('status').textContent='Datenstand: '+(s.last_run||'unbekannt');
+ }catch(e){$('status').textContent='Fehler: '+e.message;$('benchmarkInfo').textContent='Keine verifizierbaren Vergleichsdaten';}
+}
+$('refresh').onclick=load;load();
+</script></body></html>
