@@ -1,0 +1,42 @@
+name: ETF Vorwaertsvergleich 5.1 - 30 Sitzungen (nur Paper)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '50 23 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etf-forward-cooldown-51
+  cancel-in-progress: false
+
+jobs:
+  forward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate frozen paper-only controls
+        run: |
+          python -m py_compile scripts/forward_cooldown_51.py
+          python -m unittest discover -s tests -p 'test_forward_cooldown_51.py' -v
+      - name: Process one verified completed US market session
+        run: python scripts/forward_cooldown_51.py
+      - name: Persist ONLY independent frozen forward state
+        run: |
+          if [ ! -f data/forward-cooldown-51.json ]; then
+            echo "No validated new US market session, no state to commit"
+            exit 0
+          fi
+          git add data/forward-cooldown-51.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Record independent frozen 30-session forward paper observations"
+          git pull --rebase
+          git push
