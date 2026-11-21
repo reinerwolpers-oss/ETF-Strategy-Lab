@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "mode": "PAPER_ONLY",
+  "variant": "FROZEN_30_SESSION_COOLDOWN",
+  "start_date": "2026-11-23",
+  "starting_cash_usd": 500,
+  "cooldown_sessions": 30,
+  "source_seasonal_snapshot": "2026-11-20T16:19:03.139342+00:00",
+  "description": "Precommitted for future sessions; no backfill and no broker access. Intended as exploratory forward paper validation, not a locked independent test of the development history.",
+  "frozen_windows": [
+    {
+      "ticker": "QQQ",
+      "entry_month_day": "05-28",
+      "holding_calendar_days": 56
+    },
+    {
+      "ticker": "SMH",
+      "entry_month_day": "10-08",
+      "holding_calendar_days": 56
+    }
+  ],
+  "risk": {
+    "max_position_fraction": 0.2,
+    "max_invested_fraction": 0.6,
+    "stop_loss_fraction": 0.08,
+    "portfolio_drawdown_trigger_fraction": 0.1,
+    "fee_per_trade_usd": 1,
+    "slippage_fraction": 0.001,
+    "fractional_share_step": 0.001
+  },
+  "broker_connection": false,
+  "live_orders": false
+}
