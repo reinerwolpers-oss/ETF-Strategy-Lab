@@ -52,6 +52,13 @@
 <div id="durationStatus" class="muted">Lade Variantenvergleich …</div>
 <div style="overflow-x:auto"><table><thead><tr><th>Risikoregel</th><th>Endkapital</th><th>Rendite</th><th>Max. Drawdown</th><th>Transaktionen</th><th>Risikopausen</th></tr></thead><tbody id="durationRows"><tr><td colspan="6">Noch kein Variantenvergleich veröffentlicht.</td></tr></tbody></table></div>
 <p class="muted">Explorative Forschung, keine unabhängige Validierung oder Handelsfreigabe. Die laufende Vorwärtsvalidierung bleibt unberührt.</p></section>
+<section class="panel"><h2>🧪 Eingefrorener Vorwärtstest 5.1</h2>
+<p>Separate 500-$-Kontrollgruppe mit den eingefrorenen QQQ- und SMH-Saisonfenstern. Die experimentelle Variante pausiert neue Käufe für 30 abgeschlossene US-Börsensitzungen nach einem 10-%-Drawdown. Der ursprüngliche Paper-Bot mit permanentem Kaufstopp läuft unverändert weiter.</p>
+<p><strong>Start frühestens 23.11.2026, ohne rückwirkende Buchungen.</strong> Wegen fehlender Positionswechsel können die beiden Gruppen längere Zeit identische Werte zeigen. Neue Trades werden nicht erzwungen.</p>
+<p><a href="https://github.com/reinerwolpers-oss/ETF-Strategy-Lab/actions/workflows/forward-cooldown-51.yml">Eigenständigen GitHub-Workflow für Vorwärtstest prüfen</a></p>
+<div id="forward51Status" class="muted">Lade getrennte Vorwärtsdaten …</div>
+<div style="overflow-x:auto"><table><thead><tr><th>Kennzahl</th><th>Kontrolle: permanent</th><th>Variante: 30 Sitzungen</th></tr></thead><tbody id="forward51Rows"><tr><td colspan="3">Noch keine neuen Beobachtungen</td></tr></tbody></table></div>
+<p class="muted">Nur gemeinsame, ab Testbeginn neu gespeicherte Handelstage sind vergleichbar. Der Vorwärtstest ist ein explorativer Paper-Vergleich, keine Brokerorder oder Echtgeldfreigabe. Tägliche Modellbewertungen verwenden geschätzte Tages-Schlusskurse und unterstellen synthetische Ausführung.</p></section>
 <section class="panel"><h2>Einordnung</h2><p id="interpretation">Lade Daten …</p><p class="muted">Ein Drawdown wird nur aus den erfassten Tagesständen berechnet. Intraday-Verluste können größer gewesen sein. QQQ ist ein transparenter, aber konzentrierter Aktien-Benchmark, nicht automatisch eine risikogleiche Alternative. Aussagekräftige Performancebewertungen benötigen deutlich mehr Beobachtungen und tatsächliche Strategietransaktionen.</p><button id="refresh">Daten neu laden</button> <span id="status" class="muted"></span></section>
 </main>
 <script>
@@ -186,5 +193,33 @@ async function loadDurationComparison(){
   }
  }catch(e){$('durationStatus').textContent=e.message}
 }
-$('refresh').onclick=()=>{load();loadHistorical();loadWalk();loadPortfolio50();loadCooldown();loadDurationComparison()};load();loadHistorical();loadWalk();loadPortfolio50();loadCooldown();loadDurationComparison();
+async function loadForward51(){
+ try{
+  const [a,b]=await Promise.all([
+   fetch('./data/paper-portfolio.json?v='+Date.now(),{cache:'no-store'}),
+   fetch('./data/forward-cooldown-51.json?v='+Date.now(),{cache:'no-store'})
+  ]);
+  if(!a.ok)throw Error('Kontrollgruppen-Daten nicht erreichbar.');
+  if(!b.ok)throw Error('Die separate Variante hat noch keinen bestätigten Vorwärtslauf ab dem 23.11.2026.');
+  const control=await a.json(),experiment=await b.json();
+  if(control.mode!=='PAPER_ONLY'||experiment.mode!=='PAPER_ONLY'||experiment.variant!=='FROZEN_30_SESSION_COOLDOWN')throw Error('Unzulässiger oder unerwarteter Modus');
+  if(!Array.isArray(control.equity_history)||!Array.isArray(experiment.equity_history))throw Error('Fehlende Tagesreihen');
+  const controlMap=new Map(control.equity_history.filter(x=>x.date>='2026-11-23').map(x=>[x.date,x]));
+  const paired=experiment.equity_history.filter(x=>x.date>='2026-11-23'&&controlMap.has(x.date));
+  $('forward51Status').textContent='Experiment: '+(experiment.last_processed_market_day||'kein neuer Börsentag')+' · Gemeinsam auswertbare Tage: '+paired.length+' · Kontrollgruppe und Variante werden ausschließlich getrennt gebucht.';
+  const last=paired.at(-1),start=paired[0];
+  const n=x=>Number(x);
+  const rows=[
+    ['Gemeinsame Handelstage',paired.length,paired.length],
+    ['Letzter gemeinsamer Tag',last?last.date:'Noch keiner',last?last.date:'Noch keiner'],
+    ['Virtuelle Transaktionen seit Testbeginn',(control.trades||[]).filter(t=>t.date>='2026-11-23').length,(experiment.trades||[]).length],
+    ['Aktueller Depotwert',last?usd(controlMap.get(last.date).equity_usd):'–',last?usd(last.equity_usd):'–'],
+    ['Wertentwicklung ab erstem gemeinsamen Tagesstand',paired.length>=2?pct(n(controlMap.get(last.date).equity_usd)/n(controlMap.get(start.date).equity_usd)-1):'Noch nicht berechenbar',paired.length>=2?pct(n(last.equity_usd)/n(start.equity_usd)-1):'Noch nicht berechenbar'],
+    ['Risikostatus',control.halted?'Permanenter Kaufstopp':'Keine Sperre',experiment.cooldown_remaining>0?experiment.cooldown_remaining+' Sitzungen übrig':'Keine Pause']
+  ];
+  const body=$('forward51Rows');body.replaceChildren();
+  for(const vals of rows){const tr=document.createElement('tr');for(const value of vals){const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td)}body.appendChild(tr)}
+ }catch(e){$('forward51Status').textContent=e.message}
+}
+$('refresh').onclick=()=>{load();loadHistorical();loadWalk();loadPortfolio50();loadCooldown();loadDurationComparison();loadForward51()};load();loadHistorical();loadWalk();loadPortfolio50();loadCooldown();loadDurationComparison();loadForward51();
 </script></body></html>
