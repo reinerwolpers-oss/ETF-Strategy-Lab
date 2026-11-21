@@ -232,7 +232,8 @@ def main():
         "equity_usd":round(equity,2),"cash_usd":round(state["cash"],2),
         "invested_usd":round(invested,2),
         "drawdown_pct":round(100*(equity/state["peak_equity"]-1),3),
-        "positions":len(state["positions"]),"quotes_fresh":all(fresh.values())})
+        "positions":len(state["positions"]),"quotes_fresh":all(fresh.values()),
+        "benchmark_qqq_close_usd":round(market["QQQ"][1],5) if "QQQ" in market else None})
     state["quotes"]={t:{"date":day.isoformat(),"close_usd":round(price,5)}
                      for t,(day,price) in market.items()}
     state["equity_history"]=state["equity_history"][-MAX_HISTORY:]
