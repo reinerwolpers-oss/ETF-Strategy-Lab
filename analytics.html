@@ -40,6 +40,12 @@
 <canvas class="chart" id="historicalCurve" aria-label="Historischer Portfolio-Modellwert versus QQQ Buy and Hold"></canvas>
 <div class="legend"><span><i class="key"></i>Historische Portfolio-Simulation</span><span><i class="key blue"></i>QQQ-Buy-and-Hold ohne Kosten</span></div>
 <p id="historicalDetail" class="muted"></p></section>
+<section class="panel"><h2>⏳ Variante: 30 Börsentage Handelspause nach Risikostopp</h2>
+<p>Getrennter Forschungsversuch: Bei 10 % Depotverlust werden <strong>neue Käufe für 30 gemeinsame Börsentage pausiert</strong>. Offene Positionen werden weiter verwaltet; anschließend beginnt ein neuer Risikobewertungsabschnitt. Alle übrigen Portfolio-Regeln bleiben gleich. Diese Variante wurde nach Ansicht der historischen Verluste entwickelt und kann daher überangepasst sein.</p>
+<p><a href="https://github.com/reinerwolpers-oss/ETF-Strategy-Lab/actions/workflows/historical-portfolio-cooldown.yml">Cooldown-Variante in GitHub Actions starten</a></p>
+<div id="cooldownStatus" class="muted">Alternativer Forschungsbericht wird geladen …</div>
+<div style="overflow-x:auto"><table><thead><tr><th>Kennzahl</th><th>Ursprünglich</th><th>30-Tage-Pause</th></tr></thead><tbody id="cooldownRows"><tr><td colspan="3">Noch keine Vergleichsergebnisse</td></tr></tbody></table></div>
+<p class="muted">Beide Simulationen nutzen historische, teils bereinigte Kurse und modellierte Schlusskursausführungen, keine echten Brokerorders. Die Variante ist explorativ und keine unabhängige Validierung.</p></section>
 <section class="panel"><h2>Einordnung</h2><p id="interpretation">Lade Daten …</p><p class="muted">Ein Drawdown wird nur aus den erfassten Tagesständen berechnet. Intraday-Verluste können größer gewesen sein. QQQ ist ein transparenter, aber konzentrierter Aktien-Benchmark, nicht automatisch eine risikogleiche Alternative. Aussagekräftige Performancebewertungen benötigen deutlich mehr Beobachtungen und tatsächliche Strategietransaktionen.</p><button id="refresh">Daten neu laden</button> <span id="status" class="muted"></span></section>
 </main>
 <script>
@@ -144,5 +150,20 @@ function drawHistorical(rows){
  for(const [key,color] of [['equity_usd','#66e1bd'],['qqq_buy_hold_usd','#91b8ff']]){ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.3;rows.forEach((r,i)=>{if(i)ctx.lineTo(px(i),py(r[key]));else ctx.moveTo(px(i),py(r[key]))});ctx.stroke()}
  ctx.fillStyle='#a4b7d0';ctx.fillText(rows[0].date,48,h-6);ctx.fillText(rows[rows.length-1].date,Math.max(48,w-108),h-6);
 }
-$('refresh').onclick=()=>{load();loadHistorical();loadWalk();loadPortfolio50()};load();loadHistorical();loadWalk();loadPortfolio50();
+async function loadCooldown(){
+ try {
+  const response=await fetch('./data/historical-portfolio-cooldown.json?v='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw Error('Noch kein Cooldown-Backtest gespeichert. Den Workflow einmal manuell ausführen.');
+  const d=await response.json();
+  if(d.version!==1||d.mode!=='RESEARCH_ONLY'||d.method!=='PRIOR_YEAR_TRAINED_30_SESSION_COOLDOWN'||!Array.isArray(d.cooldown_events))throw Error('Unbekanntes Alternativformat');
+  const originalResponse=await fetch('./data/historical-portfolio-50.json?v='+Date.now(),{cache:'no-store'});
+  if(!originalResponse.ok)throw Error('Originalvergleich nicht verfügbar');
+  const base=await originalResponse.json();
+  if(base.simulation_start!==d.simulation_start||base.simulation_end!==d.simulation_end)throw Error('Vergleichszeiträume stimmen nicht überein');
+  $('cooldownStatus').textContent='Gleicher historischer Zeitraum: '+d.simulation_start+' bis '+d.simulation_end+' · Forschungsstand: '+d.generated_at;
+  const rows=[['Endwert',usd(base.paper_ending_equity_usd),usd(d.paper_ending_equity_usd)],['Gesamtrendite',pct(base.paper_total_return),pct(d.paper_total_return)],['Maximaler Drawdown',pct(base.paper_max_drawdown),pct(d.paper_max_drawdown)],['Transaktionen',base.transactions,d.transactions],['Risikopausen',base.halted_new_entries?'Dauerhaft gesperrt':'Nicht ausgelöst',d.cooldown_events.filter(e=>e.event==='PAUSE_ENTRIES').length+' Pausen'],['Später wieder Käufe möglich','Nein',d.cooldown_events.some(e=>e.event==='RESUME_ENTRIES')?'Ja':'Noch nicht']];
+  const body=$('cooldownRows');body.replaceChildren();for(const values of rows){const tr=document.createElement('tr');for(const v of values){const td=document.createElement('td');td.textContent=v;tr.appendChild(td)}body.appendChild(tr)}
+ }catch(e){$('cooldownStatus').textContent=e.message}
+}
+$('refresh').onclick=()=>{load();loadHistorical();loadWalk();loadPortfolio50();loadCooldown()};load();loadHistorical();loadWalk();loadPortfolio50();loadCooldown();
 </script></body></html>
