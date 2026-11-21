@@ -31,22 +31,31 @@
       "drawdown_pct": 0.0,
       "positions": 0,
       "quotes_fresh": true
+    },
+    {
+      "date": "2026-11-20",
+      "equity_usd": 500.0,
+      "cash_usd": 500.0,
+      "invested_usd": 0,
+      "drawdown_pct": 0.0,
+      "positions": 0,
+      "quotes_fresh": true
     }
   ],
   "peak_equity": 500.0,
   "halted": false,
   "halt_reason": null,
-  "last_run": "2026-11-20T04:08:28.036479+00:00",
+  "last_run": "2026-11-21T04:08:08.322654+00:00",
   "last_error": null,
-  "last_processed_market_day": "2026-11-19",
+  "last_processed_market_day": "2026-11-20",
   "quotes": {
-    "QQQ": {
-      "date": "2026-11-19",
-      "close_usd": 645.03998
-    },
     "SMH": {
-      "date": "2026-11-19",
-      "close_usd": 447.48001
+      "date": "2026-11-20",
+      "close_usd": 400.06
+    },
+    "QQQ": {
+      "date": "2026-11-20",
+      "close_usd": 608.45001
     }
   }
 }
