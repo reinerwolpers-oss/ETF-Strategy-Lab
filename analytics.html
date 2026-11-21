@@ -46,6 +46,12 @@
 <div id="cooldownStatus" class="muted">Alternativer Forschungsbericht wird geladen …</div>
 <div style="overflow-x:auto"><table><thead><tr><th>Kennzahl</th><th>Ursprünglich</th><th>30-Tage-Pause</th></tr></thead><tbody id="cooldownRows"><tr><td colspan="3">Noch keine Vergleichsergebnisse</td></tr></tbody></table></div>
 <p class="muted">Beide Simulationen nutzen historische, teils bereinigte Kurse und modellierte Schlusskursausführungen, keine echten Brokerorders. Die Variante ist explorativ und keine unabhängige Validierung.</p></section>
+<section class="panel"><h2>🔬 Sensitivitätstest: 15, 30 oder 60 Börsentage</h2>
+<p>Vier historische Risikoregime auf exakt denselben Kursen: permanenter Kaufstopp und Handelspausen über 15, 30 und 60 gemeinsame Börsentage. Die Varianten wurden nach Kenntnis der historischen Verluste ausgewählt. Ein besseres Ergebnis kann daher Überanpassung sein.</p>
+<p><a href="https://github.com/reinerwolpers-oss/ETF-Strategy-Lab/actions/workflows/cooldown-duration-comparison.yml">Vergleich in GitHub Actions manuell starten</a></p>
+<div id="durationStatus" class="muted">Lade Variantenvergleich …</div>
+<div style="overflow-x:auto"><table><thead><tr><th>Risikoregel</th><th>Endkapital</th><th>Rendite</th><th>Max. Drawdown</th><th>Transaktionen</th><th>Risikopausen</th></tr></thead><tbody id="durationRows"><tr><td colspan="6">Noch kein Variantenvergleich veröffentlicht.</td></tr></tbody></table></div>
+<p class="muted">Explorative Forschung, keine unabhängige Validierung oder Handelsfreigabe. Die laufende Vorwärtsvalidierung bleibt unberührt.</p></section>
 <section class="panel"><h2>Einordnung</h2><p id="interpretation">Lade Daten …</p><p class="muted">Ein Drawdown wird nur aus den erfassten Tagesständen berechnet. Intraday-Verluste können größer gewesen sein. QQQ ist ein transparenter, aber konzentrierter Aktien-Benchmark, nicht automatisch eine risikogleiche Alternative. Aussagekräftige Performancebewertungen benötigen deutlich mehr Beobachtungen und tatsächliche Strategietransaktionen.</p><button id="refresh">Daten neu laden</button> <span id="status" class="muted"></span></section>
 </main>
 <script>
@@ -165,5 +171,20 @@ async function loadCooldown(){
   const body=$('cooldownRows');body.replaceChildren();for(const values of rows){const tr=document.createElement('tr');for(const v of values){const td=document.createElement('td');td.textContent=v;tr.appendChild(td)}body.appendChild(tr)}
  }catch(e){$('cooldownStatus').textContent=e.message}
 }
-$('refresh').onclick=()=>{load();loadHistorical();loadWalk();loadPortfolio50();loadCooldown()};load();loadHistorical();loadWalk();loadPortfolio50();loadCooldown();
+async function loadDurationComparison(){
+ try{
+  const r=await fetch('./data/cooldown-duration-comparison.json?v='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw Error('Noch kein Variantenvergleich gespeichert. Bitte den manuellen GitHub-Workflow starten.');
+  const d=await r.json();
+  if(d.version!==1||d.mode!=='RESEARCH_ONLY'||d.method!=='COOLDOWN_SENSITIVITY_15_30_60'||!Array.isArray(d.variants))throw Error('Unerwartetes Berichtsformat');
+  $('durationStatus').textContent='Forschungszeitraum: '+d.start+' bis '+d.end+' · Datenstand: '+d.generated_at;
+  const body=$('durationRows');body.replaceChildren();
+  for(const item of d.variants){
+   const tr=document.createElement('tr');
+   const columns=[item.variant==='Permanent'?'Dauerhaft':item.variant.replace(' sessions',' Börsentage'),usd(item.end_value_usd),pct(item.total_return),pct(item.max_drawdown),item.transactions,item.risk_pauses];
+   for(const v of columns){const td=document.createElement('td');td.textContent=String(v);tr.appendChild(td)}body.appendChild(tr)
+  }
+ }catch(e){$('durationStatus').textContent=e.message}
+}
+$('refresh').onclick=()=>{load();loadHistorical();loadWalk();loadPortfolio50();loadCooldown();loadDurationComparison()};load();loadHistorical();loadWalk();loadPortfolio50();loadCooldown();loadDurationComparison();
 </script></body></html>
