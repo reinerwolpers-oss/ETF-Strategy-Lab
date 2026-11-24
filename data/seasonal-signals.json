@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "generated_at": "2026-11-23T19:26:12.126817+00:00",
+  "generated_at": "2026-11-24T19:01:48.975955+00:00",
   "currency": "USD",
   "source": "Yahoo Finance unofficial adjusted daily close",
   "training_years": [
@@ -60,7 +60,7 @@
         "mean_net_return": 0.044727,
         "median_net_return": 0.058841,
         "win_rate": 0.75,
-        "worst_net_return": -0.02252
+        "worst_net_return": -0.022521
       },
       "passes_validation": true
     },
@@ -72,13 +72,13 @@
       "training": {
         "years": 7,
         "mean_net_return": 0.044294,
-        "median_net_return": 0.029435,
+        "median_net_return": 0.029436,
         "win_rate": 1.0,
         "worst_net_return": 0.003275
       },
       "validation": {
         "years": 4,
-        "mean_net_return": -0.006499,
+        "mean_net_return": -0.006498,
         "median_net_return": 0.026711,
         "win_rate": 0.75,
         "worst_net_return": -0.125954
@@ -100,7 +100,7 @@
       "validation": {
         "years": 4,
         "mean_net_return": -0.012806,
-        "median_net_return": -0.01398,
+        "median_net_return": -0.013981,
         "win_rate": 0.5,
         "worst_net_return": -0.135807
       },
@@ -114,9 +114,9 @@
       "training": {
         "years": 7,
         "mean_net_return": 0.016053,
-        "median_net_return": 0.006364,
+        "median_net_return": 0.006365,
         "win_rate": 1.0,
-        "worst_net_return": 0.000653
+        "worst_net_return": 0.000652
       },
       "validation": {
         "years": 4,
