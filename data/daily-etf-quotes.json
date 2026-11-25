@@ -1,36 +1,36 @@
 {
   "version": 1,
-  "generated_at": "2026-11-24T07:00:25.840155+00:00",
+  "generated_at": "2026-11-25T05:34:18.242184+00:00",
   "source": "Yahoo Finance unofficial daily close",
   "currency": "USD",
   "quotes": {
     "BND": {
-      "date": "2026-11-23",
+      "date": "2026-11-24",
       "close_usd": 71.36,
       "age_calendar_days": 1,
       "status": "RECENT"
     },
     "MTUM": {
-      "date": "2026-11-23",
-      "close_usd": 63.94,
+      "date": "2026-11-24",
+      "close_usd": 61.89,
       "age_calendar_days": 1,
       "status": "RECENT"
     },
     "QQQ": {
-      "date": "2026-11-23",
-      "close_usd": 651.03003,
+      "date": "2026-11-24",
+      "close_usd": 638.09998,
       "age_calendar_days": 1,
       "status": "RECENT"
     },
     "SMH": {
-      "date": "2026-11-23",
-      "close_usd": 460.17999,
+      "date": "2026-11-24",
+      "close_usd": 426.75,
       "age_calendar_days": 1,
       "status": "RECENT"
     },
     "VT": {
-      "date": "2026-11-23",
-      "close_usd": 148.21001,
+      "date": "2026-11-24",
+      "close_usd": 147.56,
       "age_calendar_days": 1,
       "status": "RECENT"
     }
