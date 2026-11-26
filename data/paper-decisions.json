@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "generated_at": "2026-11-25T05:34:19.553607+00:00",
+  "generated_at": "2026-11-26T05:16:15.508792+00:00",
   "mode": "PAPER_ONLY",
   "source": "Read-only explanation based on stored paper and seasonal JSON",
   "last_paper_run": "2026-11-21T04:08:08.322654+00:00",
   "last_market_day": "2026-11-20",
-  "quote_snapshot_generated_at": "2026-11-25T05:34:18.242184+00:00",
+  "quote_snapshot_generated_at": "2026-11-26T05:16:14.855131+00:00",
   "quote_snapshot_status": "RECENT",
   "quote_errors": {},
   "bot_fresh": false,
@@ -22,8 +22,8 @@
       "reason": "Letzter Paper-Bot-Lauf fehlt oder ist veraltet",
       "has_position": false,
       "planned_exit_date": null,
-      "last_quote_date": "2026-11-24",
-      "last_quote_usd": 147.56,
+      "last_quote_date": "2026-11-25",
+      "last_quote_usd": 147.53999,
       "quote_status": "RECENT",
       "historical_validation_pass": false
     },
@@ -33,8 +33,8 @@
       "reason": "Letzter Paper-Bot-Lauf fehlt oder ist veraltet",
       "has_position": false,
       "planned_exit_date": null,
-      "last_quote_date": "2026-11-24",
-      "last_quote_usd": 638.09998,
+      "last_quote_date": "2026-11-25",
+      "last_quote_usd": 633.92999,
       "quote_status": "RECENT",
       "historical_validation_pass": true
     },
@@ -44,8 +44,8 @@
       "reason": "Letzter Paper-Bot-Lauf fehlt oder ist veraltet",
       "has_position": false,
       "planned_exit_date": null,
-      "last_quote_date": "2026-11-24",
-      "last_quote_usd": 426.75,
+      "last_quote_date": "2026-11-25",
+      "last_quote_usd": 422.45999,
       "quote_status": "RECENT",
       "historical_validation_pass": true
     },
@@ -55,8 +55,8 @@
       "reason": "Letzter Paper-Bot-Lauf fehlt oder ist veraltet",
       "has_position": false,
       "planned_exit_date": null,
-      "last_quote_date": "2026-11-24",
-      "last_quote_usd": 61.89,
+      "last_quote_date": "2026-11-25",
+      "last_quote_usd": 61.51,
       "quote_status": "RECENT",
       "historical_validation_pass": false
     },
@@ -66,8 +66,8 @@
       "reason": "Letzter Paper-Bot-Lauf fehlt oder ist veraltet",
       "has_position": false,
       "planned_exit_date": null,
-      "last_quote_date": "2026-11-24",
-      "last_quote_usd": 71.36,
+      "last_quote_date": "2026-11-25",
+      "last_quote_usd": 71.6,
       "quote_status": "RECENT",
       "historical_validation_pass": false
     }
