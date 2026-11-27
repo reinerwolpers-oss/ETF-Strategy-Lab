@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "generated_at": "2026-11-26T17:51:15.260396+00:00",
+  "generated_at": "2026-11-27T17:37:04.853669+00:00",
   "currency": "USD",
   "source": "Yahoo Finance unofficial adjusted daily close",
   "training_years": [
@@ -60,7 +60,7 @@
         "mean_net_return": 0.044727,
         "median_net_return": 0.058841,
         "win_rate": 0.75,
-        "worst_net_return": -0.022521
+        "worst_net_return": -0.02252
       },
       "passes_validation": true
     },
@@ -71,10 +71,10 @@
       "holding_calendar_days": 56,
       "training": {
         "years": 7,
-        "mean_net_return": 0.044295,
-        "median_net_return": 0.029436,
+        "mean_net_return": 0.044294,
+        "median_net_return": 0.029435,
         "win_rate": 1.0,
-        "worst_net_return": 0.003276
+        "worst_net_return": 0.003275
       },
       "validation": {
         "years": 4,
