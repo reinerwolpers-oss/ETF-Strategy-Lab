@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "generated_at": "2026-11-26T05:16:15.508792+00:00",
+  "generated_at": "2026-11-27T05:13:56.631156+00:00",
   "mode": "PAPER_ONLY",
   "source": "Read-only explanation based on stored paper and seasonal JSON",
   "last_paper_run": "2026-11-21T04:08:08.322654+00:00",
   "last_market_day": "2026-11-20",
-  "quote_snapshot_generated_at": "2026-11-26T05:16:14.855131+00:00",
+  "quote_snapshot_generated_at": "2026-11-27T05:13:55.961362+00:00",
   "quote_snapshot_status": "RECENT",
   "quote_errors": {},
   "bot_fresh": false,
